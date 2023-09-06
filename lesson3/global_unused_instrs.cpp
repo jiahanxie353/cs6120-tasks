@@ -63,7 +63,6 @@ int main(int argc, char* argv[]) {
         removeNullValues(brilProg);
     } while (programChanged);
 
-    Json::FastWriter styledWriter;
     outfile << brilProg;
     outfile.close();
 
