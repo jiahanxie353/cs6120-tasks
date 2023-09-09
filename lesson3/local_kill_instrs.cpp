@@ -7,17 +7,10 @@
 #include <typeinfo>
 #include <vector>
 
-using json = nlohmann::json;
-
-using Var = std::string;
-using Instr = json;
-using Block = std::vector<Instr*>;
+#include "cfg.hpp"
 
 bool programChanged = false;
 
-std::set<std::string> TERMINATOR_OPS = {"jmp", "br", "ret"};
-
-std::vector<Block> formBasicBlocks(const std::vector<Instr*>&);
 bool removeNullValues(json&);
 
 int main(int argc, char* argv[]) {
@@ -32,17 +25,7 @@ int main(int argc, char* argv[]) {
     json brilProg = json::parse(jsonFile);
 
     do {
-        std::vector<Block> allBlocks;
-        for (int fcnIdx = 0; fcnIdx < brilProg["functions"].size(); ++fcnIdx) {
-            std::vector<Instr*> brilInstrs;
-            for (auto& instr : brilProg["functions"][fcnIdx]["instrs"]) {
-                brilInstrs.push_back(&instr);
-            }
-            std::vector<Block> blocks = formBasicBlocks(brilInstrs);
-            for (const auto& block : blocks) {
-                allBlocks.push_back(block);
-            }
-        }
+        std::vector<Block> allBlocks = genAllBlocks(brilProg);
 
         std::map<Var, Instr*> lastDef;  // keeps track of variables that are
                                         // defined but never used
@@ -74,35 +57,6 @@ int main(int argc, char* argv[]) {
     outfile.close();
 
     return EXIT_SUCCESS;
-}
-
-bool isTerminator(const Instr& instr) {
-    return (instr.contains("labels") &&
-            (TERMINATOR_OPS.find(instr["op"]) != TERMINATOR_OPS.end()));
-}
-
-std::vector<Block> formBasicBlocks(const std::vector<Instr*>& instrs) {
-    std::vector<Block> basicBlocks;
-    Block curBlock;
-    for (const auto& instr : instrs) {
-        if (isTerminator(*instr)) {
-            curBlock.push_back(instr);
-            basicBlocks.push_back(curBlock);
-            curBlock.clear();
-        } else if ((*instr).contains("label")) {
-            if (curBlock.size() > 0) {
-                basicBlocks.push_back(curBlock);
-            }
-            curBlock = {instr};
-        } else {
-            curBlock.push_back(instr);
-        }
-    }
-    if (curBlock.size() > 0) {
-        basicBlocks.push_back(curBlock);
-    }
-
-    return basicBlocks;
 }
 
 bool removeNullValues(json& value) {
