@@ -1,0 +1,1 @@
+wget -P ~ https://git.io/.gdbinit
