@@ -8,10 +8,9 @@
 #include <vector>
 
 #include "cfg.hpp"
+#include "utils.hpp"
 
 bool programChanged = false;
-
-bool removeNullValues(json&);
 
 int main(int argc, char* argv[]) {
     std::string outputJsonName = std::string(argv[1]);
@@ -33,13 +32,13 @@ int main(int argc, char* argv[]) {
         for (auto& block : allBlocks) {
             for (auto& instr : block) {
                 // check for uses first
-                if ((*instr).contains("args")) {
+                if (instr->contains("args")) {
                     for (const auto& arg : (*instr)["args"]) {
                         lastDef.erase(arg.dump());
                     }
                 }
                 // then check for defs
-                if ((*instr).contains("dest")) {
+                if (instr->contains("dest")) {
                     Var candidate = (*instr)["dest"];
                     if (lastDef.find(candidate) != lastDef.end()) {
                         (*lastDef[candidate]).clear();
@@ -57,36 +56,4 @@ int main(int argc, char* argv[]) {
     outfile.close();
 
     return EXIT_SUCCESS;
-}
-
-bool removeNullValues(json& value) {
-    if (value.is_object()) {
-        std::vector<std::string> keysToRemove;
-
-        for (auto it = value.begin(); it != value.end(); ++it) {
-            if (it->is_null() || (it->is_object() && it->empty())) {
-                keysToRemove.push_back(it.key());
-            } else {
-                if (removeNullValues(*it)) {
-                    keysToRemove.push_back(it.key());
-                }
-            }
-        }
-        for (const auto& key : keysToRemove) {
-            value.erase(key);
-        }
-        return value.empty();
-    } else if (value.is_array()) {
-        for (auto it = value.begin(); it != value.end();
-             /* no increment here */) {
-            if (it->is_null() || (it->is_object() && it->empty())) {
-                it = value.erase(it);
-            } else if (removeNullValues(*it)) {
-                it = value.erase(it);
-            } else {
-                ++it;
-            }
-        }
-    }
-    return value.is_null() || (value.is_object() && value.empty());
 }

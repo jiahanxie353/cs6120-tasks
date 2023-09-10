@@ -6,23 +6,17 @@
                     "dest": "a",
                     "op": "const",
                     "type": "int",
-                    "value": 100
+                    "value": 2
                 },
                 {
-                    "dest": "a",
+                    "dest": "b",
                     "op": "const",
                     "type": "int",
-                    "value": 42
-                },
-                {
-                    "dest": "a",
-                    "op": "const",
-                    "type": "int",
-                    "value": 37
+                    "value": 3
                 },
                 {
                     "args": [
-                        "a"
+                        "b"
                     ],
                     "op": "print"
                 }

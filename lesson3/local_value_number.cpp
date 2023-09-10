@@ -21,19 +21,6 @@ std::map<Var, int> var2Num;
 std::map<int, std::vector<Var>> canonHome;
 // map from value numbering to const values/str literals
 std::map<int, std::string> num2Const;
-/**  variable substitution during on-the-fly optimization: (e.g., when you have
- * already computed `a + b` and now you encounter this expression again, first
- * use var2Num to find the numbering of `a` and `b`; then create the expression
- * tuple `(add, #1, #2)`; then use `LVNTable.get(exprTuple)` to find its
- * canonical home `canonVar`; finally, substitute the original expression by (1)
- * `id` operation, if `exprTuple` already has a canonical home; (2)`op,
- * [canonHome.get(arg) for arg in args]`
- * Workflow: for curVar in curExpr => var2Num(curValue) to get value numbering
- * => canonHome(valNumber) to get its canonical home => substitute every
- * variable in the current by the canonical variable => have a new expression =>
- * check if the new expression is already computed, i.e., in the LVNTable => if
- * yes, use `id` operation; otw, use the new expression with the same op, but
- * with original variables substituted by the canonical ones.**/
 // the freshest numbering
 int numbering;
 

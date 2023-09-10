@@ -1,12 +1,13 @@
-#include <jsoncpp/json/json.h>
-
 #include <fstream>
 #include <iostream>
+#include <nlohmann/json.hpp>
 #include <set>
 
-bool programChanged = false;
+#include "utils.hpp"
 
-bool removeNullValues(Json::Value&);
+using json = nlohmann::json;
+
+bool programChanged = false;
 
 int main(int argc, char* argv[]) {
     std::string outputJsonName = std::string(argv[1]);
@@ -16,23 +17,17 @@ int main(int argc, char* argv[]) {
     }
     std::ofstream outfile(outputJsonName);
 
-    // Iterate over all instructions globally and delete the ones that
-    // 1. are not used anywhere globally; 2. have no side effects
     std::ifstream jsonFile(argv[1]);
-    Json::Value brilProg;
-    jsonFile >> brilProg;
+    json brilProg = json::parse(jsonFile);
 
     do {
         // First iteration through the whole program to store all used variables
         std::set<std::string> usedVars;
-        for (int fcnIdx = 0; fcnIdx < brilProg["functions"].size(); ++fcnIdx) {
-            const Json::Value brilInstrucions =
-                brilProg["functions"][fcnIdx]["instrs"];
-            for (int instrIdx = 0; instrIdx < brilInstrucions.size();
-                 ++instrIdx) {
-                if (brilInstrucions[instrIdx].isMember("args")) {
-                    for (auto arg : brilInstrucions[instrIdx]["args"]) {
-                        usedVars.insert(arg.asString());
+        for (auto& function : brilProg["functions"]) {
+            for (const auto& instr : function["instrs"]) {
+                if (instr.contains("args")) {
+                    for (const auto& arg : instr["args"]) {
+                        usedVars.insert(arg.get<std::string>());
                     }
                 }
             }
@@ -41,20 +36,15 @@ int main(int argc, char* argv[]) {
         // Second iteration through the whole program to eliminate the
         // instruction that has dead variable(s) and has no side effects
         bool changedFlag = false;
-        for (int fcnIdx = 0; fcnIdx < brilProg["functions"].size(); ++fcnIdx) {
-            Json::Value& brilInstrucions =
-                brilProg["functions"][fcnIdx]["instrs"];
-            for (int instrIdx = 0; instrIdx < brilInstrucions.size();
-                 ++instrIdx) {
-                if (brilInstrucions[instrIdx].isMember("dest") &&
-                    (usedVars.find(
-                         brilInstrucions[instrIdx]["dest"].asString()) ==
-                     usedVars
-                         .end())) {  // bril has value operations vs. effect
-                                     // operations; value operations have "dest"
-                                     // fields and never have side effects, and
-                                     // vice versa for effect operations
-                    brilInstrucions[instrIdx].clear();
+        for (auto& function : brilProg["functions"]) {
+            for (auto& instr : function["instrs"]) {
+                if (instr.contains("dest") &&
+                    (usedVars.find(instr["dest"].get<std::string>()) ==
+                     usedVars.end())) {  // bril has value operations vs. effect
+                    // operations; value operations have "dest"
+                    // fields and never have side effects, and
+                    // vice versa for effect operations
+                    instr.clear();
                     changedFlag = true;
                 }
             }
@@ -63,42 +53,8 @@ int main(int argc, char* argv[]) {
         removeNullValues(brilProg);
     } while (programChanged);
 
-    outfile << brilProg;
+    outfile << brilProg.dump(4);
     outfile.close();
 
     return EXIT_SUCCESS;
-}
-
-bool removeNullValues(Json::Value& value) {
-    if (value.isObject()) {
-        std::vector<std::string> keysToRemove;
-        for (auto it = value.begin(); it != value.end(); ++it) {
-            if (it->isNull() || (it->isObject() && it->empty())) {
-                keysToRemove.push_back(it.key().asString());
-            } else {
-                if (removeNullValues(*it)) {
-                    keysToRemove.push_back(it.key().asString());
-                }
-            }
-        }
-        for (const auto& key : keysToRemove) {
-            value.removeMember(key);
-        }
-        return value.empty();
-    } else if (value.isArray()) {
-        Json::ArrayIndex index = 0;
-        while (index < value.size()) {
-            if (value[index].isNull() ||
-                (value[index].isObject() && value[index].empty())) {
-                Json::Value removedItem;
-                value.removeIndex(index, &removedItem);
-            } else if (removeNullValues(value[index])) {
-                Json::Value removedItem;
-                value.removeIndex(index, &removedItem);
-            } else {
-                index++;
-            }
-        }
-    }
-    return value.isNull() || (value.isObject() && value.empty());
 }
