@@ -7,19 +7,8 @@
 
 using json = nlohmann::json;
 
-bool programChanged = false;
-
-int main(int argc, char* argv[]) {
-    std::string outputJsonName = std::string(argv[1]);
-    size_t dotPos = outputJsonName.rfind('.');
-    if (dotPos != std::string::npos) {
-        outputJsonName.insert(dotPos, "_dce1");
-    }
-    std::ofstream outfile(outputJsonName);
-
-    std::ifstream jsonFile(argv[1]);
-    json brilProg = json::parse(jsonFile);
-
+json global_unused(json brilProg) {
+    bool programChanged = false;
     do {
         // First iteration through the whole program to store all used variables
         std::set<std::string> usedVars;
@@ -53,8 +42,5 @@ int main(int argc, char* argv[]) {
         removeNullValues(brilProg);
     } while (programChanged);
 
-    outfile << brilProg.dump(4);
-    outfile.close();
-
-    return EXIT_SUCCESS;
+    return brilProg;
 }

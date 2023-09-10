@@ -1,15 +1,4 @@
-#include <algorithm>
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <tuple>
-#include <vector>
-
-#include "cfg.hpp"
-#include "utils.hpp"
-
-using Args = std::vector<Var>;
-using ExprTuple = std::tuple<Op, std::vector<int>>;
+#include "local_value_number.hpp"
 
 // mapping from expression tuples to their value numbering
 std::map<ExprTuple, int> exprNumTbl;
@@ -27,11 +16,7 @@ int numbering;
 ExprTuple genExprTuple(Instr*);
 void insertExprNumBinding(ExprTuple, std::string);
 
-int main(int argc, char* argv[]) {
-    std::ofstream outfile = genOutFile(argv[1], "_lvn");
-
-    json brilProg = readJson(argv[1]);
-
+json lvn(json brilProg) {
     std::tuple<std::vector<Block>, std::vector<std::vector<bool>>>
         blocksOverwrites = genBlocksOverwrites(brilProg);
     // list of blocks in the given bril program
@@ -106,10 +91,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    outfile << brilProg.dump(4);
-    outfile.close();
-
-    return EXIT_SUCCESS;
+    return brilProg;
 }
 
 /* Generates an expression tuple (op, [num_i, num_j]) from an instruction. If op

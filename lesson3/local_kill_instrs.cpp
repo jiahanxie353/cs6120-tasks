@@ -1,28 +1,7 @@
-#include <any>
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <nlohmann/json.hpp>
-#include <set>
-#include <typeinfo>
-#include <vector>
+#include "local_kill_instrs.hpp"
 
-#include "cfg.hpp"
-#include "utils.hpp"
-
-bool programChanged = false;
-
-int main(int argc, char* argv[]) {
-    std::string outputJsonName = std::string(argv[1]);
-    size_t dotPos = outputJsonName.rfind('.');
-    if (dotPos != std::string::npos) {
-        outputJsonName.insert(dotPos, "_dce2");
-    }
-    std::ofstream outfile(outputJsonName);
-
-    std::ifstream jsonFile(argv[1]);
-    json brilProg = json::parse(jsonFile);
-
+json local_kill(json brilProg) {
+    bool programChanged = false;
     do {
         std::vector<Block> allBlocks = genAllBlocks(brilProg);
 
@@ -34,7 +13,7 @@ int main(int argc, char* argv[]) {
                 // check for uses first
                 if (instr->contains("args")) {
                     for (const auto& arg : (*instr)["args"]) {
-                        lastDef.erase(arg.dump());
+                        lastDef.erase(arg.get<std::string>());
                     }
                 }
                 // then check for defs
@@ -52,8 +31,10 @@ int main(int argc, char* argv[]) {
         removeNullValues(brilProg);
     } while (programChanged);
 
-    outfile << brilProg.dump(4);
-    outfile.close();
-
-    return EXIT_SUCCESS;
+    return brilProg;
 }
+
+// int main(int arg, char* argv[]) {
+//     json brilProg = readJson(argv[1]);
+//     local_kill(brilProg);
+// }
