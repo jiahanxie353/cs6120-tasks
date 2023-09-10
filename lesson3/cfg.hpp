@@ -18,4 +18,4 @@ using namespace bril;
 
 std::vector<Block> genAllBlocks(json&);
 std::tuple<std::vector<Block>, std::vector<std::vector<bool>>>
-genBlocksOverwrite(json&);
+genBlocksOverwrites(json&);

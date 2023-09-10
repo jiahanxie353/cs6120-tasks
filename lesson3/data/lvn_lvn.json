@@ -1,0 +1,97 @@
+{
+    "functions": [
+        {
+            "instrs": [
+                {
+                    "dest": "a",
+                    "op": "const",
+                    "type": "int",
+                    "value": 4
+                },
+                {
+                    "dest": "b",
+                    "op": "const",
+                    "type": "int",
+                    "value": 2
+                },
+                {
+                    "dest": "c",
+                    "op": "const",
+                    "type": "int",
+                    "value": 5
+                },
+                {
+                    "args": [
+                        "a",
+                        "b"
+                    ],
+                    "dest": "#4",
+                    "op": "add",
+                    "type": "int"
+                },
+                {
+                    "args": [
+                        "a",
+                        "c"
+                    ],
+                    "dest": "#5",
+                    "op": "add",
+                    "type": "int"
+                },
+                {
+                    "args": [
+                        "#4"
+                    ],
+                    "dest": "sum1",
+                    "op": "id",
+                    "type": "int"
+                },
+                {
+                    "args": [
+                        "b"
+                    ],
+                    "dest": "d",
+                    "op": "id",
+                    "type": "int",
+                    "value": 2
+                },
+                {
+                    "args": [
+                        "sum1"
+                    ],
+                    "op": "print"
+                },
+                {
+                    "args": [
+                        "#4",
+                        "b"
+                    ],
+                    "dest": "sum1",
+                    "op": "add",
+                    "type": "int"
+                },
+                {
+                    "args": [
+                        "sum1"
+                    ],
+                    "op": "print"
+                },
+                {
+                    "args": [
+                        "#4"
+                    ],
+                    "dest": "sum2",
+                    "op": "id",
+                    "type": "int"
+                },
+                {
+                    "args": [
+                        "sum2"
+                    ],
+                    "op": "print"
+                }
+            ],
+            "name": "main"
+        }
+    ]
+}

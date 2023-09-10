@@ -8,18 +8,18 @@
 #include "cfg.hpp"
 #include "utils.hpp"
 
-bool DEBUG = false;
-
 using Args = std::vector<Var>;
 using ExprTuple = std::tuple<Op, std::vector<int>>;
 
-std::map<ExprTuple, int>
-    exprNumTbl;  // mapping from expression tuples to their value numbering
-std::map<Var, int> var2Num;  // mapping from variable names to their current
-                             // value numbering row number in the table
-std::map<int, std::vector<Var>>
-    canonHome;  // map from value numbering to canonical variables; there can be
-                // multiple canonical homes, always retrieve the first one
+// mapping from expression tuples to their value numbering
+std::map<ExprTuple, int> exprNumTbl;
+// mapping from variable names to their current value numbering row number in
+// the table
+std::map<Var, int> var2Num;
+// map from value numbering to canonical variables; there can be multiple
+// canonical homes, always retrieve the first one
+std::map<int, std::vector<Var>> canonHome;
+// map from value numbering to const values/str literals
 std::map<int, std::string> num2Const;
 /**  variable substitution during on-the-fly optimization: (e.g., when you have
  * already computed `a + b` and now you encounter this expression again, first
@@ -34,54 +34,88 @@ std::map<int, std::string> num2Const;
  * check if the new expression is already computed, i.e., in the LVNTable => if
  * yes, use `id` operation; otw, use the new expression with the same op, but
  * with original variables substituted by the canonical ones.**/
+// the freshest numbering
 int numbering;
 
-ExprTuple genExprTuple(Instr*);  // generates an expression tuple (op, num_i,
-                                 // num_j); special case when op = const
-int insertExprNumBinding(ExprTuple,
-                         Instr*);  // auto increment `numbering` by one, and
-                                   // insert a new {expression tuple: numbering}
-                                   // binding to valNumTblvar2Num.insert()
-void updateVar2Num(Var, int);
-void updateExpr(Instr*, Var);
+ExprTuple genExprTuple(Instr*);
+void insertExprNumBinding(ExprTuple, std::string);
 
 int main(int argc, char* argv[]) {
     std::ofstream outfile = genOutFile(argv[1], "_lvn");
 
     json brilProg = readJson(argv[1]);
 
-    std::vector<Block> allBlocks = genAllBlocks(brilProg);
-    for (auto& block : allBlocks) {
+    std::tuple<std::vector<Block>, std::vector<std::vector<bool>>>
+        blocksOverwrites = genBlocksOverwrites(brilProg);
+    // list of blocks in the given bril program
+    std::vector<Block> allBlocks = std::get<0>(blocksOverwrites);
+    // bool to indicate whether each instruction's dest will be overwritten in
+    // its local block (effect operation instructions are assumed never to be
+    // overwritten)
+    std::vector<std::vector<bool>> overwrites = std::get<1>(blocksOverwrites);
+
+    for (size_t blockIdx = 0; blockIdx < allBlocks.size(); ++blockIdx) {
         // it's local analysis, so everything is per-block
         numbering = 0;
         exprNumTbl.clear();
         var2Num.clear();
         canonHome.clear();
-        for (auto instr : block) {
+
+        Block block = allBlocks[blockIdx];
+        for (size_t instrIdx = 0; instrIdx < block.size(); ++instrIdx) {
+            Instr* instr = block[instrIdx];
+            // effect operations will not produce values, so we don't care about
+            // replacing any value
             if (!instr->contains("dest")) {
                 continue;
             }
+
             ExprTuple expr = genExprTuple(instr);
 
             int num;
             if (exprNumTbl.find(expr) != exprNumTbl.end()) {
+                // the value has already been computed, we retrieve its
+                // numbering and will reuse it
                 num = exprNumTbl[expr];
-                // ------------------------------------------------ //
-                if (DEBUG) {
-                    std::cout << "substituting, and the numbering is: " << num
-                              << ", the canon home is: " << canonHome[num][0]
-                              << ", the new value is: " << instr->at("dest")
-                              << std::endl;
-                }
-                // ------------------------------------------------ //
                 canonHome[num].push_back(instr->at("dest"));
+                // we keep track of all possible variables that have the same
+                // value numbering, but we only use the first one
                 Var cHome = canonHome[num][0];
 
-                updateExpr(instr, cHome);
+                // replace the old instruction with instr.dest = id
+                // existCanonHome
+                json tmpId = R"( {"op": "id"} )"_json;
+                json tmpArg;
+                tmpArg["args"] = json::array({cHome});
+                instr->update(tmpId);
+                instr->update(tmpArg);
             } else {
-                num = insertExprNumBinding(expr, instr);
+                numbering += 1;
+                num = numbering;
+                std::string dest = instr->at("dest").get<std::string>();
+                if (overwrites[blockIdx][instrIdx]) {
+                    dest = "#" + std::to_string(num);  // fresh variable name
+                    instr->operator[]("dest") = dest;
+                }
+                insertExprNumBinding(expr, dest);
+
+                json newArgs = json::array();
+                if (instr->operator[]("op") != "const") {
+                    for (const auto arg : instr->at("args")) {
+                        int argNum = var2Num[arg.get<std::string>()];
+                        std::string argNumCHome = canonHome[argNum][0];
+                        newArgs.push_back(argNumCHome);
+                    }
+                    instr->operator[]("args") = newArgs;
+                }
             }
-            updateVar2Num(instr->at("dest"), num);
+            Var dest = instr->at("dest").get<std::string>();
+            auto iter = var2Num.find(dest);
+            if (iter != var2Num.end())
+                iter->second = num;
+            else {
+                var2Num.insert({dest, num});
+            }
         }
     }
 
@@ -91,65 +125,53 @@ int main(int argc, char* argv[]) {
     return EXIT_SUCCESS;
 }
 
-Args getArgs(Instr* instr) {
-    Args args;
-    if (instr->contains("args")) {
-        for (const auto& arg : instr->at("args")) {
-            args.push_back(arg);
-        }
-    }
-    return args;
-}
-
-std::vector<int> findConst(std::map<int, std::string> numConstMap,
-                           std::string constStr) {
-    std::vector<int> res;
-    for (auto& it : numConstMap) {
-        if (it.second == constStr) {
-            res = {it.first};
-            break;
-        }
-    }
-    return res;
-}
-
+/* Generates an expression tuple (op, [num_i, num_j]) from an instruction. If op
+ * is const, returns (const, [numbering_of_const_value])
+ */
 ExprTuple genExprTuple(Instr* instr) {
     Op op = instr->at("op");
     std::vector<int> nums;
     if (op == "const") {
-        if (DEBUG) std::cout << instr->at("value") << std::endl;
-        std::string constVal = instr->at("value").dump();
-        std::vector<int> constValNums = findConst(num2Const, constVal);
-        if (DEBUG) std::cout << "found const" << std::endl;
-        if (constValNums.size() == 0) {
+        const std::string constVal = instr->at("value").dump();
+
+        bool constExist = false;
+        for (const auto& it : num2Const) {
+            if (it.second == constVal) {
+                nums = {it.first};
+                constExist = true;
+                break;
+            }
+        }
+
+        if (!constExist) {
             nums = {numbering + 1};
             num2Const.insert({numbering + 1, constVal});
-        } else {
-            nums = constValNums;
         }
     } else {
-        Args args = getArgs(instr);
-
-        for (const auto& arg : args) {
-            nums.push_back(
-                var2Num[arg]);  // args are guaranteed to exist in var2Num as
-                                // long as it's not a const expression, because
-                                // otw the program will raise a syntax error
-                                // already
+        if (instr->contains("args")) {
+            for (const auto& arg : instr->at("args")) {
+                // arg names `arg`s (excluding const str literals) are
+                // guaranteed to exist in var2Num, otw the program will raise an
+                // error during semantic analysis
+                nums.push_back(var2Num[arg]);
+            }
         }
     }
 
     return std::make_tuple(op, nums);
 }
 
-int insertExprNumBinding(ExprTuple expr, Instr* instr) {
-    numbering += 1;
+/* Insert a new {expression tuple: numbering}; insert a new canonical home to
+ * numberings's canonHome, insert "#{numbering}" if that variable will be
+ * overwritten
+ */
+void insertExprNumBinding(ExprTuple expr, std::string dest) {
     exprNumTbl.insert({expr, numbering});
     for (auto& mapIter : canonHome) {
         std::vector<std::string>& canonVars = mapIter.second;
         for (auto vectIter = canonVars.begin(); vectIter != canonVars.end();
              ++vectIter) {
-            if (*vectIter == instr->at("dest")) {
+            if (*vectIter == dest) {
                 if (canonVars.size() <= 1) {
                     int curVarNum = var2Num[canonVars[0]];
                     canonVars[0] = "#" + std::to_string(curVarNum);
@@ -160,30 +182,6 @@ int insertExprNumBinding(ExprTuple expr, Instr* instr) {
             }
         }
     }
-    std::vector<Var> newCHome = {instr->at("dest")};
-    if (DEBUG) {
-        // ------------------------------------------------ //
-        std::cout << "inserting new variables, and the new numbering is: "
-                  << numbering << std::endl;
-    }
-    // ------------------------------------------------ //
+    std::vector<Var> newCHome = {dest};
     canonHome.insert({numbering, newCHome});
-    return numbering;
-}
-
-void updateVar2Num(Var dest, int num) {
-    auto iter = var2Num.find(dest);
-    if (iter != var2Num.end())
-        iter->second = num;
-    else {
-        var2Num.insert({dest, num});
-    }
-}
-
-void updateExpr(Instr* instr, Var cHome) {
-    json tmpConst = R"( {"op": "const"} )"_json;
-    json tmpArg;
-    tmpArg["args"] = json::array({cHome});
-    instr->update(tmpConst);
-    instr->update(tmpArg);
 }

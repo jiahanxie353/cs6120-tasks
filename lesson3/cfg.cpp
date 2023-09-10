@@ -102,7 +102,7 @@ std::vector<Block> genAllBlocks(json& brilProg) {
 }
 
 std::tuple<std::vector<Block>, std::vector<std::vector<bool>>>
-genBlocksOverwrite(json& brilProg) {
+genBlocksOverwrites(json& brilProg) {
     std::vector<Block> allBlocks;
     std::vector<std::vector<bool>> allOverwrite;
     for (int fcnIdx = 0; fcnIdx < brilProg["functions"].size(); ++fcnIdx) {
@@ -132,22 +132,4 @@ genBlocksOverwrite(json& brilProg) {
         }
     }
     return std::make_tuple(allBlocks, allOverwrite);
-}
-
-int main(int argc, char* argv[]) {
-    json brilProg = readJson(argv[1]);
-    std::tuple<std::vector<Block>, std::vector<std::vector<bool>>> allBlocks =
-        genBlocksOverwrite(brilProg);
-    std::vector<Block> blocks = std::get<0>(allBlocks);
-    std::vector<std::vector<bool>> willBeOverwritten = std::get<1>(allBlocks);
-    for (size_t i = 0; i < blocks.size(); ++i) {
-        std::cout << "[" << std::endl;
-        for (size_t j = 0; j < blocks[i].size(); ++j) {
-            std::cout << blocks[i][j]->dump() << std::endl;
-            std::cout << "willBeOverwritten: " << willBeOverwritten[i][j]
-                      << std::endl;
-        }
-        std::cout << "]" << std::endl;
-    }
-    return EXIT_SUCCESS;
 }
