@@ -17,5 +17,6 @@ using Block = std::vector<Instr*>;
 using namespace bril;
 
 std::vector<Block> genAllBlocks(json&);
-std::tuple<std::vector<Block>, std::vector<std::vector<bool>>>
+std::tuple<std::vector<Block>, std::vector<std::vector<bool>>,
+           std::vector<std::set<Var>>>
 genBlocksOverwrites(json&);

@@ -36,56 +36,6 @@ std::vector<Block> formBasicBlocks(const std::vector<Instr*>& instrs) {
     return basicBlocks;
 }
 
-// std::vector<
-//     std::tuple<std::vector<std::tuple<Instr*, bool>>, std::set<std::string>>>
-// formAugBasicBlocks(const std::vector<Instr*>& instrs) {
-//     std::map<Var, int> occurCount;
-//     for (const auto instr : instrs) {
-//         if (instr->contains("dest")) {
-//             std::string destVar = instr->at("dest").dump();
-//             auto iter = occurCount.find(destVar);
-//             if (iter != occurCount.end())
-//                 iter->second += 1;
-//             else
-//                 occurCount.insert({destVar, 1});
-//         }
-//     }
-
-//     std::vector<std::tuple<std::vector<std::tuple<Instr*, bool>>,
-//                            std::set<std::string>>>
-//         res;
-//     std::vector<std::tuple<Instr*, bool>> curAugBlock;
-//     std::set<std::string> blockVarNames;
-//     for (const auto& instr : instrs) {
-//         if (isTerminator(instr)) {
-//             curAugBlock.push_back(std::make_tuple(instr, false));
-//             res.push_back(std::make_tuple(curAugBlock, blockVarNames));
-//             curAugBlock.clear();
-//             blockVarNames.clear();
-//         } else if (instr->contains("label")) {  // the start of the basic
-//         block
-//             if (curAugBlock.size() > 0) {
-//                 res.push_back(std::make_tuple(curAugBlock, blockVarNames));
-//             }
-//             curAugBlock = {std::make_tuple(instr, false)};
-//         } else {
-//             if (instr->contains("dest")) {
-//                 std::string destName = instr->at("dest").dump();
-//                 blockVarNames.insert(destName);
-//                 if (occurCount[destName] > 1) {
-//                     curAugBlock.push_back(std::make_tuple(instr, true));
-//                     occurCount[destName] -= 1;
-//                 } else
-//                     curAugBlock.push_back(std::make_tuple(instr, false));
-//             }
-//         }
-//     }
-//     if (curAugBlock.size() > 0) {
-//         res.push_back(std::make_tuple(curAugBlock, blockVarNames));
-//     }
-//     return res;
-// }
-
 std::vector<Block> genAllBlocks(json& brilProg) {
     std::vector<Block> allBlocks;
     for (int fcnIdx = 0; fcnIdx < brilProg["functions"].size(); ++fcnIdx) {
@@ -101,10 +51,12 @@ std::vector<Block> genAllBlocks(json& brilProg) {
     return allBlocks;
 }
 
-std::tuple<std::vector<Block>, std::vector<std::vector<bool>>>
+std::tuple<std::vector<Block>, std::vector<std::vector<bool>>,
+           std::vector<std::set<Var>>>
 genBlocksOverwrites(json& brilProg) {
     std::vector<Block> allBlocks;
-    std::vector<std::vector<bool>> allOverwrite;
+    std::vector<std::vector<bool>> allOverwrites;
+    std::vector<std::set<Var>> allVarNames;
     for (int fcnIdx = 0; fcnIdx < brilProg["functions"].size(); ++fcnIdx) {
         std::vector<Instr*> brilInstrs;
         for (auto& instr : brilProg["functions"][fcnIdx]["instrs"]) {
@@ -128,8 +80,9 @@ genBlocksOverwrites(json& brilProg) {
                     seenDest.insert(destName);
                 }
             }
-            allOverwrite.push_back(curBlockOverwrite);
+            allOverwrites.push_back(curBlockOverwrite);
+            allVarNames.push_back(seenDest);
         }
     }
-    return std::make_tuple(allBlocks, allOverwrite);
+    return std::make_tuple(allBlocks, allOverwrites, allVarNames);
 }

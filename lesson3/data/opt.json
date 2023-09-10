@@ -19,13 +19,13 @@
                         "a",
                         "b"
                     ],
-                    "dest": "#4",
+                    "dest": "sum1sum1",
                     "op": "add",
                     "type": "int"
                 },
                 {
                     "args": [
-                        "#4"
+                        "sum1sum1"
                     ],
                     "dest": "sum1",
                     "op": "id",
@@ -39,7 +39,7 @@
                 },
                 {
                     "args": [
-                        "#4",
+                        "sum1sum1",
                         "b"
                     ],
                     "dest": "sum1",
@@ -54,7 +54,7 @@
                 },
                 {
                     "args": [
-                        "#4"
+                        "sum1sum1"
                     ],
                     "dest": "sum2",
                     "op": "id",

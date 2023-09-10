@@ -17,7 +17,8 @@ ExprTuple genExprTuple(Instr*);
 void insertExprNumBinding(ExprTuple, std::string);
 
 json lvn(json brilProg) {
-    std::tuple<std::vector<Block>, std::vector<std::vector<bool>>>
+    std::tuple<std::vector<Block>, std::vector<std::vector<bool>>,
+               std::vector<std::set<Var>>>
         blocksOverwrites = genBlocksOverwrites(brilProg);
     // list of blocks in the given bril program
     std::vector<Block> allBlocks = std::get<0>(blocksOverwrites);
@@ -25,6 +26,7 @@ json lvn(json brilProg) {
     // its local block (effect operation instructions are assumed never to be
     // overwritten)
     std::vector<std::vector<bool>> overwrites = std::get<1>(blocksOverwrites);
+    std::vector<std::set<Var>> allVarNames = std::get<2>(blocksOverwrites);
 
     for (size_t blockIdx = 0; blockIdx < allBlocks.size(); ++blockIdx) {
         // it's local analysis, so everything is per-block
@@ -34,6 +36,7 @@ json lvn(json brilProg) {
         canonHome.clear();
 
         Block block = allBlocks[blockIdx];
+        std::set<Var> blockVarNames = allVarNames[blockIdx];
         for (size_t instrIdx = 0; instrIdx < block.size(); ++instrIdx) {
             Instr* instr = block[instrIdx];
             // effect operations will not produce values, so we don't care about
@@ -66,7 +69,13 @@ json lvn(json brilProg) {
                 num = numbering;
                 std::string dest = instr->at("dest").get<std::string>();
                 if (overwrites[blockIdx][instrIdx]) {
-                    dest = "#" + std::to_string(num);  // fresh variable name
+                    Var freshName = dest;
+                    while (blockVarNames.find(freshName) !=
+                           blockVarNames.end()) {
+                        freshName += dest;
+                    }
+                    blockVarNames.insert(freshName);
+                    dest = freshName;
                     instr->operator[]("dest") = dest;
                 }
                 insertExprNumBinding(expr, dest);
