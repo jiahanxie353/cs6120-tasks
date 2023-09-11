@@ -19,6 +19,7 @@ set(SOURCE_FILES
     local_analysis_opt.cpp
     utils.cpp
 )
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../)
 
 # Add executable
 add_executable(local_opt ${SOURCE_FILES})
