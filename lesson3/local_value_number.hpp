@@ -6,8 +6,8 @@
 #include <tuple>
 #include <vector>
 
-#include "cfg.hpp"
-#include "utils.hpp"
+#include "../utils.hpp"
+#include "form_blocks.hpp"
 
 using Args = std::vector<Var>;
 using ExprTuple = std::tuple<Op, std::vector<int>>;

@@ -1,9 +1,9 @@
+#include "global_unused_instrs.hpp"
+
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <set>
-
-#include "utils.hpp"
 
 using json = nlohmann::json;
 

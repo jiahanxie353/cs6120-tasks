@@ -12,12 +12,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Add source files
 set(SOURCE_FILES
-    cfg.cpp
+    form_blocks.cpp
     global_unused_instrs.cpp
     local_kill_instrs.cpp
     local_value_number.cpp
     local_analysis_opt.cpp
-    utils.cpp
+    ../utils.cpp
 )
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../)
 
