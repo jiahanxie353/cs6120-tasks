@@ -21,13 +21,21 @@ CFG::CFG(json& brilFcn) {
 
     this->basicBlocks = CFG::buildBlocks(currInstrs);
 
-    this->nameBlocks();
+    this->nameBlocks(this->basicBlocks);
 
     this->cfg = this->buildCFG(this->getBasicBlocks());
 
-    for (const auto& elm : this->cfg) {
-        for (const auto& succ : elm.second) {
-            std::cout << "{" + elm.first + "} -> {" + succ + "}" << std::endl;
+    for (const auto block : this->getBasicBlocks()) {
+        std::cout << block->getLabel() + "'s preds are: " << std::endl;
+        for (const auto pred : block->getPredecessors()) {
+            std::cout << pred->getLabel() << std::endl;
+        }
+    }
+
+    for (const auto block : this->getBasicBlocks()) {
+        std::cout << block->getLabel() + "'s succs are: " << std::endl;
+        for (const auto succ : block->getSuccessors()) {
+            std::cout << succ->getLabel() << std::endl;
         }
     }
 }
@@ -54,7 +62,7 @@ vector<Block*> CFG::buildBlocks(vector<Instr*>& instrs) {
     return allBlocks;
 }
 
-void CFG::nameBlocks() {
+void CFG::nameBlocks(vector<Block*>) {
     int mapSize = 0;
     for (auto block : this->getBasicBlocks()) {
         string blockName;
@@ -63,6 +71,7 @@ void CFG::nameBlocks() {
         } else
             blockName = "b" + std::to_string(mapSize);
         block->setLabel(blockName);
+        this->label2Block.insert({blockName, block});
         mapSize += 1;
     }
 }
@@ -70,7 +79,7 @@ void CFG::nameBlocks() {
 map<string, vector<string>> CFG::buildCFG(vector<Block*> basicBlocks) {
     map<string, vector<string>> cfgMap;
     int blockCount = 0;
-    for (auto& block : basicBlocks) {
+    for (auto block : basicBlocks) {
         Instr* lastInstr = block->getInstrs().back();
         vector<string> successors;
         if (isTerminator(lastInstr)) {
@@ -81,6 +90,10 @@ map<string, vector<string>> CFG::buildCFG(vector<Block*> basicBlocks) {
                 successors = {basicBlocks[blockCount + 1]->getLabel()};
         }
         cfgMap.insert({block->getLabel(), successors});
+        for (auto succ : successors) {
+            block->addSuccessor(label2Block[succ]);
+            label2Block[succ]->addPredecessor(block);
+        }
     }
     return cfgMap;
 }
@@ -93,8 +106,18 @@ CFG::~CFG() {
     }
 }
 
-const vector<Instr*>& Block::getInstrs() const { return this->instructions; }
+vector<Instr*> Block::getInstrs() const { return this->instructions; }
 
 string Block::getLabel() const { return this->label; }
 
 void Block::setLabel(string labelName) { this->label = labelName; }
+
+void Block::addPredecessor(Block* block) {
+    this->predecessors.push_back(block);
+}
+
+void Block::addSuccessor(Block* block) { this->successors.push_back(block); }
+
+vector<Block*> Block::getPredecessors() const { return this->predecessors; }
+
+vector<Block*> Block::getSuccessors() const { return this->successors; }
