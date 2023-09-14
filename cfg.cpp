@@ -11,82 +11,85 @@ bool isTerminator(Instr* instr) {
                                               "op")) != TERMINATOR_OPS.end()));
 }
 
-CFG::CFG(json& brilJson) {
-    for (auto& fcn : brilJson.at("functions")) {
-        vector<Instr*> currInstrs;
-        for (auto& instr : fcn.at("instrs")) {
-            currInstrs.push_back(&instr);
-        }
-        vector<Block> currBlock = CFG::buildFcnBlocks(currInstrs);
-        this->basicBlocks.insert({fcn["name"].get<string>(), currBlock});
+CFG::CFG(json& brilFcn) {
+    this->rawBrilFcn = brilFcn;
 
-        this->nameBlocks(fcn["name"].get<string>());
+    vector<Instr*> currInstrs;
+    for (auto& instr : brilFcn.at("instrs")) {
+        currInstrs.push_back(&instr);
+    }
 
-        this->buildCFG(this->getBasicBlocks(fcn["name"]));
+    this->basicBlocks = CFG::buildBlocks(currInstrs);
 
-        for (const auto& elm : this->cfg) {
-            for (const auto& succ : elm.second) {
-                std::cout << "{" + elm.first + "} -> {" + succ + "}"
-                          << std::endl;
-            }
+    this->nameBlocks();
+
+    this->cfg = this->buildCFG(this->getBasicBlocks());
+
+    for (const auto& elm : this->cfg) {
+        for (const auto& succ : elm.second) {
+            std::cout << "{" + elm.first + "} -> {" + succ + "}" << std::endl;
         }
     }
 }
 
-vector<Block>& CFG::getBasicBlocks(string fcnName) const {
-    return this->basicBlocks.at(fcnName);
-}
-
-vector<Block> CFG::buildFcnBlocks(vector<Instr*>& instrs) {
-    vector<Block> basicBlocks;
+vector<Block*> CFG::buildBlocks(vector<Instr*>& instrs) {
+    vector<Block*> allBlocks;
     vector<Instr*> curBlock;
     for (const auto instr : instrs) {
         if (isTerminator(instr)) {
             curBlock.push_back(instr);
-            basicBlocks.push_back(Block(curBlock));
+            allBlocks.push_back(new Block(curBlock));
             curBlock.clear();
         } else if (instr->contains("label")) {
             if (curBlock.size() > 0) {
-                basicBlocks.push_back(Block(curBlock));
+                allBlocks.push_back(new Block(curBlock));
             }
             curBlock = {instr};
         } else
             curBlock.push_back(instr);
     }
     if (curBlock.size() > 0) {
-        basicBlocks.push_back(Block(curBlock));
+        allBlocks.push_back(new Block(curBlock));
     }
-    return basicBlocks;
+    return allBlocks;
 }
 
-void CFG::nameBlocks(const string fcnName) {
-    vector<Block>& fcnBlocks = this->getBasicBlocks(fcnName);
+void CFG::nameBlocks() {
     int mapSize = 0;
-    for (auto& block : fcnBlocks) {
+    for (auto block : this->getBasicBlocks()) {
         string blockName;
-        if (block.getInstrs()[0]->contains("label")) {
-            blockName = (block.getInstrs()[0])->at("label").get<string>();
+        if (block->getInstrs()[0]->contains("label")) {
+            blockName = (block->getInstrs()[0])->at("label").get<string>();
         } else
             blockName = "b" + std::to_string(mapSize);
-        block.setLabel(blockName);
+        block->setLabel(blockName);
         mapSize += 1;
     }
 }
 
-void CFG::buildCFG(vector<Block>& basicBlocks) {
+map<string, vector<string>> CFG::buildCFG(vector<Block*> basicBlocks) {
+    map<string, vector<string>> cfgMap;
     int blockCount = 0;
     for (auto& block : basicBlocks) {
-        Instr* lastInstr = block.getInstrs().back();
+        Instr* lastInstr = block->getInstrs().back();
         vector<string> successors;
         if (isTerminator(lastInstr)) {
             if (lastInstr->at("op") == "jmp" || lastInstr->at("op") == "br")
                 successors = lastInstr->at("labels").get<vector<string>>();
         } else {
             if (blockCount < basicBlocks.size() - 1)
-                successors = {basicBlocks[blockCount + 1].getLabel()};
+                successors = {basicBlocks[blockCount + 1]->getLabel()};
         }
-        blockCount += 1;
-        this->cfg.insert({block.getLabel(), successors});
+        cfgMap.insert({block->getLabel(), successors});
+    }
+    return cfgMap;
+}
+
+vector<Block*> CFG::getBasicBlocks() const { return this->basicBlocks; }
+
+CFG::~CFG() {
+    for (Block* block : this->basicBlocks) {
+        delete block;  // Deleting each dynamically allocated Block object
     }
 }
 

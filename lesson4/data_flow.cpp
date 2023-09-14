@@ -5,7 +5,9 @@
 // TODO: refactor Block,and CFG first
 int main(int argc, char* argv[]) {
     json brilProg = readJson(argv[1]);
-    CFG cfg(brilProg);
+    for (auto& brilFcn : brilProg.at("functions")) {
+        CFG cfg(brilFcn);
+    }
 
     return EXIT_SUCCESS;
 }

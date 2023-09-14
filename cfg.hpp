@@ -51,26 +51,27 @@ class Block {
 
 class CFG {
    public:
-    // build a cfg out of a json-represented bril program
-    CFG(json& j);
+    // build a cfg out of a json-represented bril function
+    CFG(json& brilFcn);
     // returns the full, parsed, json-represented bril program
-    json getFullProg() const;
-    // returns all basic blocks (list of lists of instructions) of a function in
-    // this cfg
-    vector<Block>& getBasicBlocks(string) const;
-    // returns the CFG (a map of label: list of labels/successors)
-    map<string, vector<string>>& getCFG() const;
+    json getFullFcn() const;
+    // returns all basic blocks (list of lists of instructions) of this cfg
+    vector<Block*> getBasicBlocks() const;
+    // returns the CFG of this function
+    map<string, vector<string>> getCFG() const;
+    ~CFG();
 
    private:
-    json rawBril;
-    // mapping from function names to their basic blocks
-    map<string, vector<Block>&> basicBlocks;
+    json rawBrilFcn;
+    // all basic blocks in this cfg
+    vector<Block*> basicBlocks;
+    // CFG, a map of label: list of labels/successors
     map<string, vector<string>> cfg;
     // build basic blocks from all instructions inside a function (each block's
     // label is not yet unassigned)
-    vector<Block> buildFcnBlocks(vector<Instr*>&);
-    // name each block with a corresponding label inside a function
-    void nameBlocks(string);
+    vector<Block*> buildBlocks(vector<Instr*>&);
+    // name each block with a corresponding label for this cfg
+    void nameBlocks();
     // build CFG from a list of basic block
-    void buildCFG(vector<Block>&);
+    map<string, vector<string>> buildCFG(vector<Block*>);
 };
