@@ -22,8 +22,13 @@ CFG::CFG(json& brilJson) {
 
         this->nameBlocks(fcn["name"].get<string>());
 
-        for (auto& basicBlock : this->basicBlocks.at(fcn["name"])) {
-            std::cout << basicBlock.getLabel() << std::endl;
+        this->buildCFG(this->getBasicBlocks(fcn["name"]));
+
+        for (const auto& elm : this->cfg) {
+            for (const auto& succ : elm.second) {
+                std::cout << "{" + elm.first + "} -> {" + succ + "}"
+                          << std::endl;
+            }
         }
     }
 }
@@ -33,7 +38,6 @@ vector<Block>& CFG::getBasicBlocks(string fcnName) const {
 }
 
 vector<Block> CFG::buildFcnBlocks(vector<Instr*>& instrs) {
-    std::cout << "hello" << std::endl;
     vector<Block> basicBlocks;
     vector<Instr*> curBlock;
     for (const auto instr : instrs) {
@@ -69,8 +73,22 @@ void CFG::nameBlocks(const string fcnName) {
     }
 }
 
-std::map<std::string, std::vector<std::string>> buildCFG(
-    const std::map<std::string, Block> label2Block) {}
+void CFG::buildCFG(vector<Block>& basicBlocks) {
+    int blockCount = 0;
+    for (auto& block : basicBlocks) {
+        Instr* lastInstr = block.getInstrs().back();
+        vector<string> successors;
+        if (isTerminator(lastInstr)) {
+            if (lastInstr->at("op") == "jmp" || lastInstr->at("op") == "br")
+                successors = lastInstr->at("labels").get<vector<string>>();
+        } else {
+            if (blockCount < basicBlocks.size() - 1)
+                successors = {basicBlocks[blockCount + 1].getLabel()};
+        }
+        blockCount += 1;
+        this->cfg.insert({block.getLabel(), successors});
+    }
+}
 
 const vector<Instr*>& Block::getInstrs() const { return this->instructions; }
 

@@ -69,6 +69,8 @@ class CFG {
     // build basic blocks from all instructions inside a function (each block's
     // label is not yet unassigned)
     vector<Block> buildFcnBlocks(vector<Instr*>&);
-    // name this[fcn]->label2Block
+    // name each block with a corresponding label inside a function
     void nameBlocks(string);
+    // build CFG from a list of basic block
+    void buildCFG(vector<Block>&);
 };
