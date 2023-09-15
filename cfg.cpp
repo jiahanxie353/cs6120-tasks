@@ -1,6 +1,7 @@
 #include "cfg.hpp"
 
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -95,10 +96,9 @@ map<string, vector<string>> CFG::buildCFG(vector<Block*> basicBlocks) {
             label2Block[succ]->addPredecessor(block);
         }
     }
+    this->built = true;
     return cfgMap;
 }
-
-vector<Block*> CFG::getBasicBlocks() const { return this->basicBlocks; }
 
 CFG::~CFG() {
     for (Block* block : this->basicBlocks) {
@@ -106,18 +106,13 @@ CFG::~CFG() {
     }
 }
 
-vector<Instr*> Block::getInstrs() const { return this->instructions; }
+vector<Block*> CFG::getBasicBlocks() const { return this->basicBlocks; }
 
-string Block::getLabel() const { return this->label; }
-
-void Block::setLabel(string labelName) { this->label = labelName; }
-
-void Block::addPredecessor(Block* block) {
-    this->predecessors.push_back(block);
+Block* CFG::getEntry() const {
+    if (this->built) {
+        for (const auto block : this->getBasicBlocks()) {
+            if (block->getPredecessors().size() == 0) return block;
+        }
+    } else
+        throw std::runtime_error("CFG not built yet!");
 }
-
-void Block::addSuccessor(Block* block) { this->successors.push_back(block); }
-
-vector<Block*> Block::getPredecessors() const { return this->predecessors; }
-
-vector<Block*> Block::getSuccessors() const { return this->successors; }

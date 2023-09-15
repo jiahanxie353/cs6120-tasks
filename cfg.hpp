@@ -2,52 +2,12 @@
 
 #include <iostream>
 #include <map>
-#include <nlohmann/json.hpp>
 #include <set>
 #include <tuple>
 #include <vector>
 
+#include "block.hpp"
 #include "utils.hpp"
-
-using std::map;
-using std::set;
-using std::string;
-using std::tuple;
-using std::vector;
-
-using json = nlohmann::json;
-
-namespace bril {
-using Var = string;
-using Op = string;
-using Instr = json;
-}  // namespace bril
-
-using namespace bril;
-
-class Block {
-   public:
-    Block(vector<Instr*> instrs) : instructions(instrs){};
-    // returns the label of this basic block
-    string getLabel() const;
-    // returns all instructions of this basic block
-    vector<Instr*> getInstrs() const;
-    // returns the predecessors of this basic block
-    vector<Block*> getPredecessors() const;
-    // returns the successors of this basic block
-    vector<Block*> getSuccessors() const;
-
-   private:
-    friend class CFG;
-    void setLabel(const string);
-    void addPredecessor(Block*);
-    void addSuccessor(Block*);
-
-    string label;
-    vector<Instr*> instructions;
-    vector<Block*> predecessors;
-    vector<Block*> successors;
-};
 
 class CFG {
    public:
@@ -57,12 +17,19 @@ class CFG {
     json getFullFcn() const;
     // returns all basic blocks (list of lists of instructions) of this cfg
     vector<Block*> getBasicBlocks() const;
+    // return the block with label name `label` in this cfg
+    Block* getBlockByLabel(const string label) const;
     // returns the CFG of this function
     map<string, vector<string>> getCFG() const;
+    // get the entry of this cfg
+    Block* getEntry() const;
     ~CFG();
 
    private:
+    // raw json representation of this function's cfg
     json rawBrilFcn;
+    // indicate whether the cfg has been built or not
+    bool built = false;
     // all basic blocks in this cfg
     vector<Block*> basicBlocks;
     // CFG, a map of label: list of labels/successors
