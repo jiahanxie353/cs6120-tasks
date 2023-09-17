@@ -11,6 +11,7 @@
 
 using std::map;
 using std::set;
+using std::shared_ptr;
 using std::string;
 using std::tuple;
 using std::vector;
@@ -33,26 +34,48 @@ class Block {
     // returns all instructions of this basic block
     vector<Instr*> getInstrs() const;
     // returns the predecessors of this basic block
-    vector<Block*> getPredecessors() const;
+    vector<shared_ptr<Block>> getPredecessors() const;
     // returns the successors of this basic block
-    vector<Block*> getSuccessors() const;
+    vector<shared_ptr<Block>> getSuccessors() const;
 
-    set<Var> getDefinedVars() const;
-    set<Var> getKilledVars() const;
+    template <class T>
+    set<T> getDefined() const {
+        if (std::is_same<T, Var>::value) {
+            return this->definedVars;
+        }
+    }
+
+    template <class T>
+    set<T> computeKilled(const set<T>& inputs) const {
+        if (std::is_same<T, Var>::value) {
+            set<Var> currAvailVars = inputs;
+            set<Var> killedVars;
+            for (const auto instr : this->getInstrs()) {
+                if (instr->contains("dest")) {
+                    Var destVar = instr->at("dest");
+                    if (currAvailVars.find(destVar) != currAvailVars.end())
+                        killedVars.insert(destVar);
+                    else
+                        currAvailVars.insert(destVar);
+                }
+            }
+            return killedVars;
+        }
+    }
 
    private:
     friend class CFG;
+
     void setLabel(const string);
-    void addPredecessor(Block*);
-    void addSuccessor(Block*);
+    void addPredecessor(shared_ptr<Block>);
+    void addSuccessor(shared_ptr<Block>);
+
     void computeDefVars();
-    void computeKilledVars(const set<Var> varsInput);
 
     string label;
     vector<Instr*> instructions;
-    vector<Block*> predecessors;
-    vector<Block*> successors;
+    vector<shared_ptr<Block>> predecessors;
+    vector<shared_ptr<Block>> successors;
 
     set<Var> definedVars;
-    set<Var> killedVars;
 };

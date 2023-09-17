@@ -25,51 +25,40 @@ CFG::CFG(json& brilFcn) {
     this->nameBlocks(this->basicBlocks);
 
     this->cfg = this->buildCFG(this->getBasicBlocks());
-
-    for (const auto block : this->getBasicBlocks()) {
-        std::cout << block->getLabel() + "'s preds are: " << std::endl;
-        for (const auto pred : block->getPredecessors()) {
-            std::cout << pred->getLabel() << std::endl;
-        }
-    }
-
-    for (const auto block : this->getBasicBlocks()) {
-        std::cout << block->getLabel() + "'s succs are: " << std::endl;
-        for (const auto succ : block->getSuccessors()) {
-            std::cout << succ->getLabel() << std::endl;
-        }
-    }
 }
 
-vector<Block*> CFG::buildBlocks(vector<Instr*>& instrs) {
-    vector<Block*> allBlocks;
+vector<shared_ptr<Block>> CFG::buildBlocks(vector<Instr*>& instrs) {
+    vector<shared_ptr<Block>> allBlocks;
     vector<Instr*> curBlock;
     for (const auto instr : instrs) {
         if (isTerminator(instr)) {
             curBlock.push_back(instr);
-            allBlocks.push_back(new Block(curBlock));
+            allBlocks.push_back(std::make_shared<Block>(curBlock));
+            allBlocks.back()->computeDefVars();
             curBlock.clear();
         } else if (instr->contains("label")) {
             if (curBlock.size() > 0) {
-                allBlocks.push_back(new Block(curBlock));
+                allBlocks.push_back(std::make_shared<Block>(curBlock));
+                allBlocks.back()->computeDefVars();
             }
             curBlock = {instr};
         } else
             curBlock.push_back(instr);
     }
     if (curBlock.size() > 0) {
-        allBlocks.push_back(new Block(curBlock));
+        allBlocks.push_back(std::make_shared<Block>(curBlock));
+        allBlocks.back()->computeDefVars();
     }
     return allBlocks;
 }
 
-void CFG::nameBlocks(vector<Block*>) {
+void CFG::nameBlocks(vector<shared_ptr<Block>> basicBlocks) {
     int mapSize = 0;
-    for (auto block : this->getBasicBlocks()) {
+    for (auto block : basicBlocks) {
         string blockName;
-        if (block->getInstrs()[0]->contains("label")) {
+        if (block->getInstrs()[0]->contains("label"))
             blockName = (block->getInstrs()[0])->at("label").get<string>();
-        } else
+        else
             blockName = "b" + std::to_string(mapSize);
         block->setLabel(blockName);
         this->label2Block.insert({blockName, block});
@@ -77,13 +66,18 @@ void CFG::nameBlocks(vector<Block*>) {
     }
 }
 
-map<string, vector<string>> CFG::buildCFG(vector<Block*> basicBlocks) {
+map<string, vector<string>> CFG::buildCFG(
+    vector<shared_ptr<Block>> basicBlocks) {
     map<string, vector<string>> cfgMap;
     int blockCount = 0;
     for (auto block : basicBlocks) {
         Instr* lastInstr = block->getInstrs().back();
         vector<string> successors;
-        if (isTerminator(lastInstr)) {
+        if (lastInstr->contains("op") && lastInstr->at("op") == "ret") {
+            // std::cout << lastInstr->dump() << std::endl;
+            // std::cout << "return!" << std::endl;
+            successors = {};
+        } else if (isTerminator(lastInstr)) {
             if (lastInstr->at("op") == "jmp" || lastInstr->at("op") == "br")
                 successors = lastInstr->at("labels").get<vector<string>>();
         } else {
@@ -91,27 +85,26 @@ map<string, vector<string>> CFG::buildCFG(vector<Block*> basicBlocks) {
                 successors = {basicBlocks[blockCount + 1]->getLabel()};
         }
         cfgMap.insert({block->getLabel(), successors});
+
         for (auto succ : successors) {
             block->addSuccessor(label2Block[succ]);
             label2Block[succ]->addPredecessor(block);
         }
+        blockCount += 1;
     }
     this->built = true;
     return cfgMap;
 }
 
-CFG::~CFG() {
-    for (Block* block : this->basicBlocks) {
-        delete block;  // Deleting each dynamically allocated Block object
-    }
+vector<shared_ptr<Block>> CFG::getBasicBlocks() const {
+    return this->basicBlocks;
 }
 
-vector<Block*> CFG::getBasicBlocks() const { return this->basicBlocks; }
-
-Block* CFG::getEntry() const {
+shared_ptr<Block> CFG::getEntry() const {
     if (this->built) {
-        for (const auto block : this->getBasicBlocks()) {
+        for (auto block : this->getBasicBlocks()) {
             if (block->getPredecessors().size() == 0) return block;
+            throw std::runtime_error("CFG entry not found!");
         }
     } else
         throw std::runtime_error("CFG not built yet!");

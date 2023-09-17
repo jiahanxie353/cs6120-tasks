@@ -7,43 +7,42 @@
 #include "../cfg.hpp"
 #include "../utils.hpp"
 
+const string reachDef = "reaching definition";
+
+namespace dataflow {
+template <class T>
+using mergeType = std::function<set<T>(const vector<set<T>>&)>;
+template <class T>
+using transferType =
+    std::function<set<T>(const shared_ptr<Block>, const set<T>&)>;
+}  // namespace dataflow
+
 // a data flow framework
 template <class T>
 class DataFlow {
    public:
-    DataFlow(const string a, CFG c, set<T> iv)
-        : analysis(a), cfg(c), initValue(iv){};
+    DataFlow(const string& a, CFG& c, const set<T>& iv);
+    CFG& getCFG() const;
+    set<T> getInitValue() const;
+    // merge a list of predecessors blocks' values
+    dataflow::mergeType<T> merge;
+    // transfer a set of values passed as inputs and a list of values inside the
+    // current block, and return the transferred results as the outputs
+    dataflow::transferType<T> transfer;
 
    private:
     // the analysis name
-    const string analysis;
+    string analysis;
     // the input cfg
-    CFG cfg;
+    CFG& cfg;
     // the initial values passed to the data flow framework
     set<T> initValue;
-    // merge a list of predecessors blocks' values
-    std::function<set<T>&(const vector<set<T>>&)> merge;
-    // transfer a set of values passed as inputs and a list of values inside the
-    // current block, and return the transferred results as the outputs
-    std::function<set<T>&(const set<T>&, const vector<T>&)> transfer;
 
-    void mergeTransferFactory(const string analysis) {
-        if (analysis == "reaching definition") {
-            auto merge = [](const vector<set<T>>& sets) -> set<T>& {
-                // union sets of strings
-                set<T> result;
-                for (const auto& s : sets) {
-                    result.insert(s.begin(), s.end());
-                }
-                return result;
-            };
-
-            auto transfer = [](const set<T>& inputSet,
-                               const vector<T>& values) -> set<T>& {};
-        }
-    }
+    tuple<dataflow::mergeType<T>, dataflow::transferType<T>>
+    mergeTransferFactory(const string analysis);
 };
 
 // the worklist algorithm for solving a data flow problem
 template <class T>
-void workList(DataFlow<T>&);
+tuple<map<shared_ptr<Block>, set<T>>, map<shared_ptr<Block>, set<T>>> workList(
+    DataFlow<T>&);
