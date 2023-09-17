@@ -6,14 +6,14 @@
 
 string Phi = "\u03A6";
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     const string analysis = reachDef;
     json brilProg = readJson(argv[1]);
-    for (auto& brilFcn : brilProg.at("functions")) {
-        std::cout << brilFcn.at("name") << std ::endl;
+    for (auto &brilFcn : brilProg.at("functions")) {
+        std::cout << brilFcn.at("name").dump() << ":" << std ::endl;
         set<string> initValues;
         if (brilFcn.contains("args")) {
-            for (const auto& arg : brilFcn.at("args"))
+            for (const auto &arg : brilFcn.at("args"))
                 initValues.insert(arg["name"].get<string>());
         }
         CFG cfg(brilFcn);
@@ -25,10 +25,9 @@ int main(int argc, char* argv[]) {
         auto itOut = out.begin();
 
         while (itIn != in.end()) {
-            std::cout << "\t" << itIn->first->getLabel() << std::endl;
+            std::cout << "    " << itIn->first->getLabel() << ":" << std::endl;
 
-            std::cout << "\t"
-                      << "\t"
+            std::cout << "        "
                       << "in: ";
             if (itIn->second.size() == 0)
                 std::cout << Phi;
@@ -42,9 +41,8 @@ int main(int argc, char* argv[]) {
             }
             std::cout << std::endl;
 
-            std::cout << "\t"
-                      << "\t"
-                      << "out : ";
+            std::cout << "        "
+                      << "out: ";
             if (itOut->second.size() == 0)
                 std::cout << Phi;
             else {
@@ -65,7 +63,7 @@ int main(int argc, char* argv[]) {
 }
 
 template <class T>
-DataFlow<T>::DataFlow(const string& a, CFG& c, const set<T>& iv)
+DataFlow<T>::DataFlow(const string &a, CFG &c, const set<T> &iv)
     : analysis(a), cfg(c), initValue(iv) {
     tuple<dataflow::mergeType<T>, dataflow::transferType<T>> mergeTransfer =
         this->mergeTransferFactory(a);
@@ -80,17 +78,17 @@ DataFlow<T>::mergeTransferFactory(const string analysis) {
         static_assert(std::is_same<T, Var>::value, "T must be string");
 
         dataflow::mergeType<T> merge =
-            [this](const vector<set<T>>& outPreds) -> set<T> {
+            [this](const vector<set<T>> &outPreds) -> set<T> {
             // union sets of strings
             set<T> unionedRes;
-            for (const auto& s : outPreds)
+            for (const auto &s : outPreds)
                 unionedRes.insert(s.begin(), s.end());
             return unionedRes;
         };
 
         dataflow::transferType<T> transfer =
             [this](const shared_ptr<Block> currBlock,
-                   const set<T>& inputSet) -> set<T> {
+                   const set<T> &inputSet) -> set<T> {
             set<T> defined = currBlock->getDefined<T>();
             set<T> killed = currBlock->computeKilled<T>(inputSet);
             set<T> difference;
@@ -110,8 +108,8 @@ DataFlow<T>::mergeTransferFactory(const string analysis) {
 }
 
 template <class T>
-tuple<map<shared_ptr<Block>, set<T>>, map<shared_ptr<Block>, set<T>>> workList(
-    DataFlow<T>& df) {
+tuple<map<shared_ptr<Block>, set<T>>, map<shared_ptr<Block>, set<T>>>
+workList(DataFlow<T> &df) {
     CFG cfg = df.getCFG();
     shared_ptr<Block> entry = cfg.getEntry();
 
@@ -122,7 +120,8 @@ tuple<map<shared_ptr<Block>, set<T>>, map<shared_ptr<Block>, set<T>>> workList(
     }
 
     std::queue<shared_ptr<Block>> worklist;
-    for (const auto b : cfg.getBasicBlocks()) worklist.push(b);
+    for (const auto b : cfg.getBasicBlocks())
+        worklist.push(b);
     while (!worklist.empty()) {
         shared_ptr<Block> block = worklist.front();
         worklist.pop();
@@ -148,12 +147,8 @@ tuple<map<shared_ptr<Block>, set<T>>, map<shared_ptr<Block>, set<T>>> workList(
     return std::make_tuple(in, out);
 }
 
-template <class T>
-CFG& DataFlow<T>::getCFG() const {
-    return this->cfg;
-}
+template <class T> CFG &DataFlow<T>::getCFG() const { return this->cfg; }
 
-template <class T>
-set<T> DataFlow<T>::getInitValue() const {
+template <class T> set<T> DataFlow<T>::getInitValue() const {
     return this->initValue;
 }
