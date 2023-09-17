@@ -109,3 +109,5 @@ shared_ptr<Block> CFG::getEntry() const {
     } else
         throw std::runtime_error("CFG not built yet!");
 }
+
+map<string, vector<string>> CFG::getCFG() const { return this->cfg; }

@@ -10,13 +10,14 @@ int main(int argc, char* argv[]) {
     const string analysis = reachDef;
     json brilProg = readJson(argv[1]);
     for (auto& brilFcn : brilProg.at("functions")) {
-        std::cout << "function: " << brilFcn.at("name") << std ::endl;
+        std::cout << brilFcn.at("name") << std ::endl;
         set<string> initValues;
         if (brilFcn.contains("args")) {
             for (const auto& arg : brilFcn.at("args"))
                 initValues.insert(arg["name"].get<string>());
         }
         CFG cfg(brilFcn);
+
         DataFlow<string> dataFlow(analysis, cfg, initValues);
         auto [in, out] = workList<string>(dataFlow);
 
@@ -24,9 +25,11 @@ int main(int argc, char* argv[]) {
         auto itOut = out.begin();
 
         while (itIn != in.end()) {
-            std::cout << "block: " << itIn->first->getLabel() << std::endl;
+            std::cout << "\t" << itIn->first->getLabel() << std::endl;
 
-            std::cout << "in: ";
+            std::cout << "\t"
+                      << "\t"
+                      << "in: ";
             if (itIn->second.size() == 0)
                 std::cout << Phi;
             else {
@@ -39,7 +42,9 @@ int main(int argc, char* argv[]) {
             }
             std::cout << std::endl;
 
-            std::cout << "out : ";
+            std::cout << "\t"
+                      << "\t"
+                      << "out : ";
             if (itOut->second.size() == 0)
                 std::cout << Phi;
             else {
@@ -128,7 +133,7 @@ tuple<map<shared_ptr<Block>, set<T>>, map<shared_ptr<Block>, set<T>>> workList(
                 outPreds.push_back(out[pred]);
 
             set<T> predsOut = df.merge(outPreds);
-            in.insert({block, predsOut});
+            in[block] = predsOut;
         }
 
         auto currOut = out[block];
