@@ -25,7 +25,6 @@ int countPaths(const map<string, vector<string>> &cfg, string srcLabel,
     // the source vertex's neighbors to the destination
     // vertex.
     for (string neighbor : cfg.at(srcLabel)) {
-        std::cout << neighbor << std::endl;
         if (visited.find(neighbor) == visited.end()) {
             count += countPaths(cfg, neighbor, destLabel, visited);
         }
@@ -50,8 +49,9 @@ int main(int argc, char *argv[]) {
         string dest = basicBlocks.back()->getLabel();
         set<string> visited{};
 
-        std::cout << src << std::endl;
-        std::cout << countPaths(graph, src, dest, visited) << std::endl;
+        int numPaths = countPaths(graph, src, dest, visited);
+
+        cfg.visualize();
     }
 
     return EXIT_SUCCESS;

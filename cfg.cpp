@@ -7,16 +7,16 @@
 
 set<string> TERMINATOR_OPS = {"jmp", "br", "ret"};
 
-bool isTerminator(Instr* instr) {
+bool isTerminator(Instr *instr) {
     return (instr->contains("labels") && (TERMINATOR_OPS.find(instr->operator[](
                                               "op")) != TERMINATOR_OPS.end()));
 }
 
-CFG::CFG(json& brilFcn) {
+CFG::CFG(json &brilFcn) {
     this->rawBrilFcn = brilFcn;
 
-    vector<Instr*> currInstrs;
-    for (auto& instr : brilFcn.at("instrs")) {
+    vector<Instr *> currInstrs;
+    for (auto &instr : brilFcn.at("instrs")) {
         currInstrs.push_back(&instr);
     }
 
@@ -27,9 +27,9 @@ CFG::CFG(json& brilFcn) {
     this->cfg = this->buildCFG(this->getBasicBlocks());
 }
 
-vector<shared_ptr<Block>> CFG::buildBlocks(vector<Instr*>& instrs) {
+vector<shared_ptr<Block>> CFG::buildBlocks(vector<Instr *> &instrs) {
     vector<shared_ptr<Block>> allBlocks;
-    vector<Instr*> curBlock;
+    vector<Instr *> curBlock;
     for (const auto instr : instrs) {
         if (isTerminator(instr)) {
             curBlock.push_back(instr);
@@ -66,12 +66,12 @@ void CFG::nameBlocks(vector<shared_ptr<Block>> basicBlocks) {
     }
 }
 
-map<string, vector<string>> CFG::buildCFG(
-    vector<shared_ptr<Block>> basicBlocks) {
+map<string, vector<string>>
+CFG::buildCFG(vector<shared_ptr<Block>> basicBlocks) {
     map<string, vector<string>> cfgMap;
     int blockCount = 0;
     for (auto block : basicBlocks) {
-        Instr* lastInstr = block->getInstrs().back();
+        Instr *lastInstr = block->getInstrs().back();
         vector<string> successors;
         if (lastInstr->contains("op") && lastInstr->at("op") == "ret") {
             // std::cout << lastInstr->dump() << std::endl;
@@ -103,7 +103,8 @@ vector<shared_ptr<Block>> CFG::getBasicBlocks() const {
 shared_ptr<Block> CFG::getEntry() const {
     if (this->built) {
         for (auto block : this->getBasicBlocks()) {
-            if (block->getPredecessors().size() == 0) return block;
+            if (block->getPredecessors().size() == 0)
+                return block;
             throw std::runtime_error("CFG entry not found!");
         }
     } else
@@ -111,3 +112,25 @@ shared_ptr<Block> CFG::getEntry() const {
 }
 
 map<string, vector<string>> CFG::getCFG() const { return this->cfg; }
+
+bool isDot(char c) { return c == '.'; }
+
+void CFG::visualize() {
+    std::cout << "digraph " << rawBrilFcn.at("name").dump() << " {"
+              << std::endl;
+    for (const auto label : label2Block) {
+        string labelName = label.first;
+        std::replace_if(labelName.begin(), labelName.end(), isDot, '_');
+        std::cout << "  " << labelName << std::endl;
+    }
+    for (const auto [label, succs] : cfg) {
+        string labelName = label;
+        std::replace_if(labelName.begin(), labelName.end(), isDot, '_');
+        for (const auto succ : succs) {
+            string succName = succ;
+            std::replace_if(succName.begin(), succName.end(), isDot, '_');
+            std::cout << "  " << labelName << " -> " << succName << std::endl;
+        }
+    }
+    std::cout << "}" << std::endl;
+}
