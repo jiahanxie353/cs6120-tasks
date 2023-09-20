@@ -1,0 +1,22 @@
+@main {
+.entry:
+  i0: int = const 0;
+  i1: int = const 1;
+  i2: int = const 2;
+  i3: int = const 2;
+.loop:
+  b1: bool = lt i2 i0;
+  i2: int = sub i2 i1;
+  br b1 .body .exit;
+.body:
+  b2: bool = lt i3 i0;
+  i3: int = sub i3 i1;
+  br b2 .then .endif;
+.then:
+  i4: int = const 3;
+.endif.18:
+  i5: int = const 4;
+  jmp .loop;
+.exit:
+  print i2;
+}
