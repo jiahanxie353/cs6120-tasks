@@ -14,6 +14,7 @@ class CFG {
   public:
     // build a cfg out of a json-represented bril function
     CFG(json &brilFcn);
+    int getSize() const;
     // returns the full, parsed, json-represented bril program
     json getFullFcn() const;
     // returns all basic blocks (list of lists of instructions) of this cfg

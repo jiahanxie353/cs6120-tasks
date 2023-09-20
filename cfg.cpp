@@ -96,6 +96,8 @@ CFG::buildCFG(vector<shared_ptr<Block>> basicBlocks) {
     return cfgMap;
 }
 
+int CFG::getSize() const { return basicBlocks.size(); }
+
 vector<shared_ptr<Block>> CFG::getBasicBlocks() const {
     return this->basicBlocks;
 }
