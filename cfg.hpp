@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <map>
+#include <regex>
 #include <set>
 #include <tuple>
 #include <vector>
@@ -10,9 +11,10 @@
 #include "utils.hpp"
 
 class CFG {
-   public:
+  public:
     // build a cfg out of a json-represented bril function
-    CFG(json& brilFcn);
+    CFG(json &brilFcn);
+    int getSize() const;
     // returns the full, parsed, json-represented bril program
     json getFullFcn() const;
     // returns all basic blocks (list of lists of instructions) of this cfg
@@ -24,7 +26,9 @@ class CFG {
     // get the entry of this cfg
     shared_ptr<Block> getEntry() const;
 
-   private:
+    void visualize();
+
+  private:
     // raw json representation of this function's cfg
     json rawBrilFcn;
     // indicate whether the cfg has been built or not
@@ -36,7 +40,7 @@ class CFG {
     map<string, shared_ptr<Block>> label2Block;
     // build basic blocks from all instructions inside a function (each block's
     // label is not yet unassigned)
-    vector<shared_ptr<Block>> buildBlocks(vector<Instr*>&);
+    vector<shared_ptr<Block>> buildBlocks(vector<Instr *> &);
     // name each block with a corresponding label for this cfg
     void nameBlocks(vector<shared_ptr<Block>>);
     // build CFG from a list of basic block
