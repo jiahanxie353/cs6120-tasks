@@ -7,16 +7,18 @@
 .loop:
   b1: bool = lt i2 i0;
   i2: int = sub i2 i1;
-  br b1 .body .exit;
-.body:
-  b2: bool = lt i3 i0;
-  i3: int = sub i3 i1;
-  br b2 .then .endif;
+  br b1 .left .right;
+.left:
+  print i1;
+.right:
+  i4: int = const 3;
+  jmp .then;
 .then:
   i4: int = const 3;
 .endif:
-  i5: int = const 4;
-  jmp .loop;
+  b2: bool = lt i3 i0;
+  i3: int = sub i3 i1;
+  br b2 .left .exit;
 .exit:
   print i2;
 }

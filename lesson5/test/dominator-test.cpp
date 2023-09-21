@@ -64,11 +64,11 @@ int main(int argc, char *argv[]) {
 
         getAllPaths(graph, src, dest, cfg.getSize());
 
-        for (const auto path : allPaths) {
-            for (const auto node : path)
-                std::cout << node << " ";
-            std::cout << std::endl;
-        }
+        // for (const auto path : allPaths) {
+        //     for (const auto node : path)
+        //         std::cout << node << " ";
+        //     std::cout << std::endl;
+        // }
 
         cfg.visualize();
     }
