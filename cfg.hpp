@@ -12,6 +12,7 @@
 
 class CFG {
   public:
+    CFG(){};
     // build a cfg out of a json-represented bril function
     CFG(json &brilFcn);
     int getSize() const;
@@ -25,12 +26,19 @@ class CFG {
     map<string, vector<string>> getCFG() const;
     // get the entry of this cfg
     shared_ptr<Block> getEntry() const;
-
+    // get the exits of this cfg
+    vector<shared_ptr<Block>> getExists() const;
+    // get the uniform exit sink of this cfg
+    shared_ptr<Block> getExitSink() const;
+    // visualize the control flow graph using graphviz
     void visualize();
 
   private:
     // raw json representation of this function's cfg
     json rawBrilFcn;
+    shared_ptr<Block> entry;
+    vector<shared_ptr<Block>> exits;
+    shared_ptr<Block> exitSink;
     // indicate whether the cfg has been built or not
     bool built = false;
     // all basic blocks in this cfg

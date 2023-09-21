@@ -1,0 +1,38 @@
+@main {
+.entry:
+  i0: int = const 0;
+  i1: int = const 1;
+  i2: int = const 2;
+  i3: int = const 2;
+.loop:
+  b1: bool = lt i2 i0;
+  i2: int = sub i2 i1;
+  br b1 .left .right;
+.left:
+  print i1;
+  jmp .then;
+.right:
+  i4: int = const 3;
+  b3: bool = lt i4 i3;
+  i4: int = sub i4 i1;
+  br b3 .if .else;
+.if:
+  i5: int = const 5;
+  b4: bool = lt i5 i4;
+  i5: int = sub i5 i2;
+  br b4 .then .exit;
+.else:
+  print i0;
+.elif:
+  print i0;
+  print i1;
+  jmp .end.elif;
+.then:
+  i4: int = const 3;
+  jmp .else;
+.end.elif:
+  print i2;
+  br b4 .loop .right;
+.exit:
+  print i2;
+}

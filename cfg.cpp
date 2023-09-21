@@ -20,11 +20,11 @@ CFG::CFG(json &brilFcn) {
         currInstrs.push_back(&instr);
     }
 
-    this->basicBlocks = CFG::buildBlocks(currInstrs);
+    basicBlocks = CFG::buildBlocks(currInstrs);
 
-    this->nameBlocks(this->basicBlocks);
+    nameBlocks(basicBlocks);
 
-    this->cfg = this->buildCFG(this->getBasicBlocks());
+    cfg = buildCFG(getBasicBlocks());
 }
 
 vector<shared_ptr<Block>> CFG::buildBlocks(vector<Instr *> &instrs) {
@@ -92,34 +92,56 @@ CFG::buildCFG(vector<shared_ptr<Block>> basicBlocks) {
         }
         blockCount += 1;
     }
-    this->built = true;
+
+    for (auto block : getBasicBlocks()) {
+        if (block->getPredecessors().size() == 0)
+            entry = block;
+
+        if (block->getSuccessors().size() == 0)
+            exits.push_back(block);
+    }
+
+    if (exits.size() > 1) {
+        exitSink = std::make_shared<Block>("exit_sink");
+        for (auto exit : exits) {
+            exit->addSuccessor(exitSink);
+            exitSink->addSuccessor(exit);
+            cfgMap[exit->getLabel()] = {exitSink->getLabel()};
+        }
+    } else {
+        assert(exits.size() == 1);
+        exitSink = exits[0];
+    }
+
+    built = true;
+
     return cfgMap;
 }
 
-int CFG::getSize() const { return basicBlocks.size(); }
-
-vector<shared_ptr<Block>> CFG::getBasicBlocks() const {
-    return this->basicBlocks;
+int CFG::getSize() const {
+    if (!built)
+        return basicBlocks.size();
+    else
+        return basicBlocks.size() + 1;
 }
+
+vector<shared_ptr<Block>> CFG::getBasicBlocks() const { return basicBlocks; }
 
 shared_ptr<Block> CFG::getEntry() const {
-    if (this->built) {
-        for (auto block : this->getBasicBlocks()) {
-            if (block->getPredecessors().size() == 0)
-                return block;
-            throw std::runtime_error("CFG entry not found!");
-        }
-    } else
-        throw std::runtime_error("CFG not built yet!");
+    if (!built)
+        return entry;
+    throw std::runtime_error("CFG not built yet, don't have an entry!");
 }
 
-map<string, vector<string>> CFG::getCFG() const { return this->cfg; }
+vector<shared_ptr<Block>> CFG::getExists() const { return exits; }
+shared_ptr<Block> CFG::getExitSink() const { return exitSink; }
 
-bool isDot(char c) { return c == '.'; }
+map<string, vector<string>> CFG::getCFG() const { return cfg; }
 
 void CFG::visualize() {
     std::cout << "digraph " << rawBrilFcn.at("name").dump() << " {"
               << std::endl;
+    auto isDot = [](char c) { return c == '.'; };
     for (const auto label : label2Block) {
         string labelName = label.first;
         std::replace_if(labelName.begin(), labelName.end(), isDot, '_');

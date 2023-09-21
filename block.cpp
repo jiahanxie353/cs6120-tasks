@@ -7,9 +7,18 @@ void Block::computeDefVars() {
     }
 }
 
-vector<Instr*> Block::getInstrs() const { return this->instructions; }
+bool Block::hasField(string fieldName, string value) const {
+    for (const auto instr : getInstrs()) {
+        if (instr->contains(fieldName) &&
+            (instr->at(fieldName).dump() == value))
+            return true;
+    }
+    return false;
+}
 
-string Block::getLabel() const { return this->label; }
+vector<Instr *> Block::getInstrs() const { return this->instructions; }
+
+string Block::getLabel() const { return label; }
 
 vector<shared_ptr<Block>> Block::getPredecessors() const {
     return this->predecessors;
