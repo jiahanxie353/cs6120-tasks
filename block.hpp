@@ -22,31 +22,31 @@ namespace bril {
 using Var = string;
 using Op = string;
 using Instr = json;
-}  // namespace bril
+} // namespace bril
 
 using namespace bril;
 
 class Block {
-   public:
-    Block(vector<Instr*> instrs) : instructions(instrs){};
+  public:
+    Block(string label) : label(label){};
+    Block(vector<Instr *> instrs) : instructions(instrs){};
     // returns the label of this basic block
     string getLabel() const;
     // returns all instructions of this basic block
-    vector<Instr*> getInstrs() const;
+    vector<Instr *> getInstrs() const;
     // returns the predecessors of this basic block
     vector<shared_ptr<Block>> getPredecessors() const;
     // returns the successors of this basic block
     vector<shared_ptr<Block>> getSuccessors() const;
+    bool hasField(string, string) const;
 
-    template <class T>
-    set<T> getDefined() const {
+    template <class T> set<T> getDefined() const {
         if (std::is_same<T, Var>::value) {
             return this->definedVars;
         }
     }
 
-    template <class T>
-    set<T> computeKilled(const set<T>& inputs) const {
+    template <class T> set<T> computeKilled(const set<T> &inputs) const {
         if (std::is_same<T, Var>::value) {
             set<Var> currAvailVars = inputs;
             set<Var> killedVars;
@@ -63,7 +63,7 @@ class Block {
         }
     }
 
-   private:
+  private:
     friend class CFG;
 
     void setLabel(const string);
@@ -73,7 +73,7 @@ class Block {
     void computeDefVars();
 
     string label;
-    vector<Instr*> instructions;
+    vector<Instr *> instructions;
     vector<shared_ptr<Block>> predecessors;
     vector<shared_ptr<Block>> successors;
 
