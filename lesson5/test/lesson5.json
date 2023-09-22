@@ -1,0 +1,131 @@
+{
+  "functions": [
+    {
+      "instrs": [
+        {
+          "label": "entry"
+        },
+        {
+          "dest": "i0",
+          "op": "const",
+          "type": "int",
+          "value": 0
+        },
+        {
+          "dest": "i1",
+          "op": "const",
+          "type": "int",
+          "value": 1
+        },
+        {
+          "dest": "i2",
+          "op": "const",
+          "type": "int",
+          "value": 2
+        },
+        {
+          "dest": "i3",
+          "op": "const",
+          "type": "int",
+          "value": 2
+        },
+        {
+          "label": "loop"
+        },
+        {
+          "args": [
+            "i2",
+            "i0"
+          ],
+          "dest": "b1",
+          "op": "lt",
+          "type": "bool"
+        },
+        {
+          "args": [
+            "i2",
+            "i1"
+          ],
+          "dest": "i2",
+          "op": "sub",
+          "type": "int"
+        },
+        {
+          "args": [
+            "b1"
+          ],
+          "labels": [
+            "body",
+            "exit"
+          ],
+          "op": "br"
+        },
+        {
+          "label": "body"
+        },
+        {
+          "args": [
+            "i3",
+            "i0"
+          ],
+          "dest": "b2",
+          "op": "lt",
+          "type": "bool"
+        },
+        {
+          "args": [
+            "i3",
+            "i1"
+          ],
+          "dest": "i3",
+          "op": "sub",
+          "type": "int"
+        },
+        {
+          "args": [
+            "b2"
+          ],
+          "labels": [
+            "then",
+            "endif"
+          ],
+          "op": "br"
+        },
+        {
+          "label": "then"
+        },
+        {
+          "dest": "i4",
+          "op": "const",
+          "type": "int",
+          "value": 3
+        },
+        {
+          "label": "endif"
+        },
+        {
+          "dest": "i5",
+          "op": "const",
+          "type": "int",
+          "value": 4
+        },
+        {
+          "labels": [
+            "loop"
+          ],
+          "op": "jmp"
+        },
+        {
+          "label": "exit"
+        },
+        {
+          "args": [
+            "i2"
+          ],
+          "op": "print"
+        }
+      ],
+      "name": "main"
+    }
+  ]
+}

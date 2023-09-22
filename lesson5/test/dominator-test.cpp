@@ -6,16 +6,15 @@
 #include "../../utils.hpp"
 #include "./utils.h"
 
-bool isPostDominator(string dominator, string dominatee, CFG &cfg) {
-    string exit = cfg.getExitSink()->getLabel();
+bool isDominator(string dominator, string dominatee, CFG &cfg) {
+    string entry = cfg.getEntry()->getLabel();
 
-    string src = dominatee;
-    string dest = exit;
+    string dest = dominatee;
 
     map<string, vector<string>> graph = cfg.getCFG();
 
     vector<vector<string>> allPaths =
-        getAllPaths(graph, src, dest, cfg.getSize());
+        getAllPaths(graph, entry, dest, cfg.getSize());
 
     for (const auto path : allPaths) {
         if (std::find(path.begin(), path.end(), dominator) == path.end())
@@ -25,17 +24,15 @@ bool isPostDominator(string dominator, string dominatee, CFG &cfg) {
     return true;
 }
 
-void postDominatorTest(string brilFile, string fcnName, string dominator,
-                       string dominatee) {
+void dominatorTest(string brilFile, string fcnName, string dominatee) {
     json brilProg = readJson(brilFile);
 
     bool foundFcn = false;
-    bool foundDR = false;
     bool foundDE = false;
 
     CFG cfg;
     for (auto &brilFcn : brilProg.at("functions")) {
-        if (foundFcn && foundDR && foundDE)
+        if (foundFcn && foundDE)
             break;
 
         if (brilFcn.at("name") == fcnName) {
@@ -45,8 +42,6 @@ void postDominatorTest(string brilFile, string fcnName, string dominator,
             auto basicBlocks = cfg.getBasicBlocks();
 
             for (const auto block : basicBlocks) {
-                if (block->getLabel() == dominator)
-                    foundDR = true;
                 if (block->getLabel() == dominatee)
                     foundDE = true;
             }
@@ -55,21 +50,20 @@ void postDominatorTest(string brilFile, string fcnName, string dominator,
 
     if (!foundFcn)
         throw std::runtime_error("Function not found!");
-    if (!foundDR)
-        throw std::runtime_error("Dominator block not found!");
     if (!foundDE)
         throw std::runtime_error("Dominatee block not found!");
 
-    assert(isPostDominator(dominator, dominatee, cfg) == true);
+    set<string> dominators = cfg.computeDominators(dominatee);
+    for (const auto dominator : dominators)
+        assert(isDominator(dominator, dominatee, cfg) == true);
 }
 
 int main(int argc, char *argv[]) {
     string brilFile = argv[1];
     string fcnName = argv[2];
-    string dominator = argv[3];
-    string dominatee = argv[4];
+    string dominatee = argv[3];
 
-    postDominatorTest(brilFile, fcnName, dominator, dominatee);
+    dominatorTest(brilFile, fcnName, dominatee);
 
     return EXIT_SUCCESS;
 }

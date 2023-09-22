@@ -153,7 +153,7 @@ set<string> multipleSetsIntersect(vector<set<string>> allSets) {
     return smallest;
 }
 
-set<string> CFG::computePostDominators(string dominatee) {
+set<string> CFG::computeDominators(string dominatee) {
     // map from vertices to every vertice
     map<string, set<string>> dom;
     map<string, set<string>> prevDom = dom;
@@ -211,7 +211,7 @@ int CFG::getSize() const {
 vector<shared_ptr<Block>> CFG::getBasicBlocks() const { return basicBlocks; }
 
 shared_ptr<Block> CFG::getEntry() const {
-    if (!built)
+    if (built)
         return entry;
     throw std::runtime_error("CFG not built yet, don't have an entry!");
 }

@@ -32,8 +32,8 @@ class CFG {
     shared_ptr<Block> getExitSink() const;
     // visualize the control flow graph using graphviz
     void visualize();
-    // compute the post dominators of a block in this cfg
-    set<string> computePostDominators(string);
+    // compute the dominators of a block in this cfg
+    set<string> computeDominators(string);
     bool contains(const string) const;
 
   private:

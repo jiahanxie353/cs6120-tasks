@@ -1,6 +1,15 @@
 #!/bin/bash
 
-# Compile the test executable
-g++ -g post-dominator-test.cpp ../../cfg.cpp ../../utils.cpp ../../block.cpp -o post-dom
+read -p "Enter your choice: " choice
 
-g++ -g dominator-test.cpp ../../cfg.cpp ../../utils.cpp ../../block.cpp -o dom
+case $choice in
+    "post")
+        g++ -g post-dominator-test.cpp utils.cpp ../../cfg.cpp ../../utils.cpp ../../block.cpp -o post-dom
+        ;;
+    "dom")
+        g++ -g dominator-test.cpp utils.cpp ../../cfg.cpp ../../utils.cpp ../../block.cpp -o dom
+        ;;
+    *)
+        echo "Invalid input"
+        ;;
+esac
