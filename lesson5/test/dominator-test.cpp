@@ -115,16 +115,8 @@ int main(int argc, char *argv[]) {
     string fcnName = argv[2];
     string dominator = argv[3];
     string dominatee = argv[4];
+
     dominatorTest(brilFile, fcnName, dominator, dominatee);
-    json brilProg = readJson(argv[1]);
-
-    // for (auto &brilFcn : brilProg.at("functions")) {
-    //     CFG cfg(brilFcn);
-
-    //     auto graph = cfg.getCFG();
-
-    //     cfg.visualize();
-    // }
 
     return EXIT_SUCCESS;
 }

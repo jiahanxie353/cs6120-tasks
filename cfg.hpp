@@ -2,8 +2,8 @@
 
 #include <iostream>
 #include <map>
-#include <regex>
 #include <set>
+#include <stdexcept>
 #include <tuple>
 #include <vector>
 
@@ -21,7 +21,7 @@ class CFG {
     // returns all basic blocks (list of lists of instructions) of this cfg
     vector<shared_ptr<Block>> getBasicBlocks() const;
     // return the block with label name `label` in this cfg
-    shared_ptr<Block> getBlockByLabel(const string label) const;
+    shared_ptr<Block> getBlock(const string label) const;
     // returns the CFG of this function
     map<string, vector<string>> getCFG() const;
     // get the entry of this cfg
@@ -32,6 +32,9 @@ class CFG {
     shared_ptr<Block> getExitSink() const;
     // visualize the control flow graph using graphviz
     void visualize();
+    // compute the dominators of a block in this cfg
+    set<string> computeDominators(string);
+    bool contains(const string) const;
 
   private:
     // raw json representation of this function's cfg
