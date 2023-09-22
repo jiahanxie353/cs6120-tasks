@@ -153,7 +153,7 @@ set<string> multipleSetsIntersect(vector<set<string>> allSets) {
     return smallest;
 }
 
-set<string> CFG::computeDominators(string dominatee) {
+set<string> CFG::computePostDominators(string dominatee) {
     // map from vertices to every vertice
     map<string, set<string>> dom;
     map<string, set<string>> prevDom = dom;

@@ -53,7 +53,7 @@ vector<vector<string>> getAllPaths(map<string, vector<string>> &cfg, string s,
     return allPaths;
 }
 
-bool isDominator(string dominator, string dominatee, CFG &cfg) {
+bool isPostDominator(string dominator, string dominatee, CFG &cfg) {
     string exit = cfg.getExitSink()->getLabel();
 
     string src = dominatee;
@@ -72,8 +72,8 @@ bool isDominator(string dominator, string dominatee, CFG &cfg) {
     return true;
 }
 
-void dominatorTest(string brilFile, string fcnName, string dominator,
-                   string dominatee) {
+void postDominatorTest(string brilFile, string fcnName, string dominator,
+                       string dominatee) {
     json brilProg = readJson(brilFile);
 
     bool foundFcn = false;
@@ -107,7 +107,7 @@ void dominatorTest(string brilFile, string fcnName, string dominator,
     if (!foundDE)
         throw std::runtime_error("Dominatee block not found!");
 
-    assert(isDominator(dominator, dominatee, cfg) == true);
+    assert(isPostDominator(dominator, dominatee, cfg) == true);
 }
 
 int main(int argc, char *argv[]) {
@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
     string dominator = argv[3];
     string dominatee = argv[4];
 
-    dominatorTest(brilFile, fcnName, dominator, dominatee);
+    postDominatorTest(brilFile, fcnName, dominator, dominatee);
 
     return EXIT_SUCCESS;
 }
