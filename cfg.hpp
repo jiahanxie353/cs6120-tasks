@@ -30,11 +30,19 @@ class CFG {
     vector<shared_ptr<Block>> getExists() const;
     // get the uniform exit sink of this cfg
     shared_ptr<Block> getExitSink() const;
+    bool contains(const string) const;
     // visualize the control flow graph using graphviz
     void visualize();
-    // compute the dominators of a block in this cfg
-    set<string> computeDominators(string);
-    bool contains(const string) const;
+    // get the dominators of a block in this cfg
+    set<string> getDominators(string) const;
+    set<string> getStrictDominators(string) const;
+    set<string> getDominatees(string) const;
+    set<string> getStrictDominatees(string) const;
+    set<string> getImmDominatees(string) const;
+    // compute the dominators of all blocks in this cfg
+    void computeDominators();
+    void computeDominatees();
+    void computeImmDominatees();
 
   private:
     // raw json representation of this function's cfg
@@ -56,4 +64,12 @@ class CFG {
     void nameBlocks(vector<shared_ptr<Block>>);
     // build CFG from a list of basic block
     map<string, vector<string>> buildCFG(vector<shared_ptr<Block>>);
+    // a mapping from a block to all its dominators in this cfg
+    map<string, set<string>> dominatorsMap;
+    map<string, set<string>> strictDominatorMap;
+    // a mapping from a block to all the blocks that it dominate in this cfg
+    map<string, set<string>> dominateesMap;
+    map<string, set<string>> strictDominateeMap;
+    // map from a block to its immediate dominatees
+    map<string, set<string>> immDominatees;
 };

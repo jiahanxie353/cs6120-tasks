@@ -153,8 +153,7 @@ set<string> multipleSetsIntersect(vector<set<string>> allSets) {
     return smallest;
 }
 
-set<string> CFG::computeDominators(string dominatee) {
-    // map from vertices to every vertice
+void CFG::computeDominators() {
     map<string, set<string>> dom;
     map<string, set<string>> prevDom = dom;
     for (const auto src : getBasicBlocks()) {
@@ -183,8 +182,72 @@ set<string> CFG::computeDominators(string dominatee) {
             }
         }
     }
+    dominatorsMap = dom;
 
-    return dom[dominatee];
+    for (const auto [dominatee, dominators] : dominatorsMap) {
+        for (const auto dominator : dominators) {
+            if (dominatee != dominator)
+                strictDominatorMap[dominatee].insert(dominator);
+        }
+    }
+}
+
+void CFG::computeDominatees() {
+    if (dominatorsMap.size() == 0)
+        computeDominators();
+
+    for (const auto [dominatee, dominators] : dominatorsMap) {
+        for (const auto dominator : dominators) {
+            dominateesMap[dominator].insert(dominatee);
+
+            if (dominator != dominatee)
+                strictDominateeMap[dominator].insert(dominatee);
+        }
+    }
+}
+
+void CFG::computeImmDominatees() {
+    if (strictDominateeMap.size() == 0)
+        computeDominatees();
+
+    // A immediate dominates B iff A dominates B but A does not strictly
+    // dominate any other node that strictly dominates B
+    for (const auto block : getBasicBlocks()) {
+        const auto blockLabel = block->getLabel();
+        const auto blockDominatees = strictDominateeMap[blockLabel];
+        for (const auto strictDomee : blockDominatees) {
+            const auto domorsOfDomee = strictDominatorMap[strictDomee];
+            bool domOfDom = false;
+            for (const auto domor : domorsOfDomee) {
+                if (blockDominatees.find(domor) != blockDominatees.end()) {
+                    domOfDom = true;
+                    break;
+                }
+            }
+            if (!domOfDom)
+                immDominatees[blockLabel].insert(strictDomee);
+        }
+    }
+}
+
+set<string> CFG::getDominators(string dominatee) const {
+    return dominatorsMap.at(dominatee);
+}
+
+set<string> CFG::getStrictDominators(string dominatee) const {
+    return strictDominatorMap.at(dominatee);
+}
+
+set<string> CFG::getDominatees(string dominator) const {
+    return dominateesMap.at(dominator);
+}
+
+set<string> CFG::getStrictDominatees(string dominator) const {
+    return strictDominateeMap.at(dominator);
+}
+
+set<string> CFG::getImmDominatees(string dominator) const {
+    return immDominatees.at(dominator);
 }
 
 bool CFG::contains(const string blockLabel) const {

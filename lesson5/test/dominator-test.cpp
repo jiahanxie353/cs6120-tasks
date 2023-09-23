@@ -53,8 +53,10 @@ void dominatorTest(string brilFile, string fcnName, string dominatee) {
     if (!foundDE)
         throw std::runtime_error("Dominatee block not found!");
 
-    set<string> dominators = cfg.computeDominators(dominatee);
-    for (const auto dominator : dominators)
+    cfg.computeDominators();
+    cfg.computeDominatees();
+    cfg.computeImmDominatees();
+    for (const auto dominator : cfg.getDominators(dominatee))
         assert(isDominator(dominator, dominatee, cfg) == true);
 }
 
