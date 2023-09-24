@@ -12,6 +12,8 @@ bool isTerminator(Instr *instr) {
                                               "op")) != TERMINATOR_OPS.end()));
 }
 
+using domTreeNode = CFG::domTreeNode;
+
 CFG::CFG(json &brilFcn) {
     this->rawBrilFcn = brilFcn;
 
@@ -153,8 +155,7 @@ set<string> multipleSetsIntersect(vector<set<string>> allSets) {
     return smallest;
 }
 
-set<string> CFG::computeDominators(string dominatee) {
-    // map from vertices to every vertice
+void CFG::computeDominators() {
     map<string, set<string>> dom;
     map<string, set<string>> prevDom = dom;
     for (const auto src : getBasicBlocks()) {
@@ -183,8 +184,156 @@ set<string> CFG::computeDominators(string dominatee) {
             }
         }
     }
+    dominatorsMap = dom;
 
-    return dom[dominatee];
+    for (const auto [dominatee, dominators] : dominatorsMap) {
+        for (const auto dominator : dominators) {
+            if (dominatee != dominator)
+                strictDominatorMap[dominatee].insert(dominator);
+        }
+    }
+}
+
+void CFG::computeDominatees() {
+    if (dominatorsMap.size() == 0)
+        computeDominators();
+
+    for (const auto block : getAllLabels()) {
+        dominateesMap[block] = {};
+        strictDominateeMap[block] = {};
+    }
+
+    for (const auto [dominatee, dominators] : dominatorsMap) {
+        for (const auto dominator : dominators) {
+            dominateesMap[dominator].insert(dominatee);
+
+            if (dominator != dominatee)
+                strictDominateeMap[dominator].insert(dominatee);
+        }
+    }
+}
+
+void CFG::computeImmDominatees() {
+    if (strictDominateeMap.size() == 0)
+        computeDominatees();
+
+    for (const auto block : getAllLabels()) {
+        immDominatees[block] = {};
+    }
+    // A immediate dominates B iff A dominates B but A does not strictly
+    // dominate any other node that strictly dominates B
+    for (const auto block : getBasicBlocks()) {
+        const auto blockLabel = block->getLabel();
+        const auto blockDominatees = strictDominateeMap[blockLabel];
+        for (const auto strictDomee : blockDominatees) {
+            const auto domorsOfDomee = strictDominatorMap[strictDomee];
+            bool domOfDom = false;
+            for (const auto domor : domorsOfDomee) {
+                if (blockDominatees.find(domor) != blockDominatees.end()) {
+                    domOfDom = true;
+                    break;
+                }
+            }
+            if (!domOfDom)
+                immDominatees[blockLabel].insert(strictDomee);
+        }
+    }
+}
+
+void CFG::populateTree(domTreeNode *currentNode, const string dominator,
+                       const map<string, set<string>> immDominateesMap) {
+    auto it = immDominateesMap.find(dominator);
+    if (it != immDominateesMap.end()) {
+        for (const string dominatee : it->second) {
+            unique_ptr<domTreeNode> childNode =
+                std::make_unique<domTreeNode>(dominatee);
+            populateTree(childNode.get(), dominatee, immDominateesMap);
+            currentNode->children.push_back(std::move(childNode));
+        }
+    }
+}
+
+void CFG::buildDomTree(const string root,
+                       const map<string, set<string>> immDominateesMap) {
+    if (!tree) {
+        tree = std::make_unique<domTreeNode>(root);
+    }
+
+    populateTree(tree.get(), root, immDominateesMap);
+}
+
+void CFG::computeDomFrontier() {
+    // `A`’s dominance frontier contains `B` iff `A` does not strictly
+    // dominate `B`, but `A` does dominate some predecessor of `B`
+    set<string> allLabels = getAllLabels();
+    for (const auto block : allLabels) {
+        domFrontier[block] = {};
+    }
+    for (const auto blockLabel : allLabels) {
+        // take set difference of ALL blocks and the dominatees of the current
+        // block. iterate over that difference set, and get the dominatees of
+        // each block check whether dominatee.getPredecessor() has common
+        // elements with currBlock.dominatees
+        set<string> currDominatees = getDominatees(blockLabel);
+        set<string> diffSet;
+        std::set_difference(allLabels.begin(), allLabels.end(),
+                            currDominatees.begin(), currDominatees.end(),
+                            std::inserter(diffSet, diffSet.end()));
+        for (const auto diffElm : diffSet) {
+            for (const auto elmDomee : getImmDominatees(diffElm)) {
+                for (const auto pred :
+                     label2Block.at(elmDomee)->getPredecessors()) {
+                    if (currDominatees.find(pred->getLabel()) !=
+                        currDominatees.end()) {
+                        domFrontier[blockLabel].insert(elmDomee);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+set<string> CFG::getDomFrontier(string nodeLabel) {
+    if (domFrontier.size() == 0)
+        computeDomFrontier();
+
+    return domFrontier.at(nodeLabel);
+}
+
+void CFG::printTree(domTreeNode &dTNode, int level) {
+    std::cout << string(4 * level, ' ');
+    std::cout << dTNode.label << std::endl;
+    for (const auto &child : dTNode.children) {
+        printTree(*child, ++level);
+        --level;
+    }
+}
+
+domTreeNode &CFG::getDomTree() const { return *tree; }
+
+set<string> CFG::getDominators(string dominatee) const {
+    return dominatorsMap.at(dominatee);
+}
+
+set<string> CFG::getStrictDominators(string dominatee) const {
+    return strictDominatorMap.at(dominatee);
+}
+
+set<string> CFG::getDominatees(string dominator) const {
+    return dominateesMap.at(dominator);
+}
+
+set<string> CFG::getStrictDominatees(string dominator) const {
+    return strictDominateeMap.at(dominator);
+}
+
+set<string> CFG::getImmDominatees(string dominator) const {
+    return immDominatees.at(dominator);
+}
+
+map<string, set<string>> CFG::getImmDominateeMap() const {
+    return immDominatees;
 }
 
 bool CFG::contains(const string blockLabel) const {
@@ -210,8 +359,15 @@ int CFG::getSize() const {
 
 vector<shared_ptr<Block>> CFG::getBasicBlocks() const { return basicBlocks; }
 
+set<string> CFG::getAllLabels() const {
+    set<string> allBlocks;
+    for (const auto block : basicBlocks)
+        allBlocks.insert(block->getLabel());
+    return allBlocks;
+}
+
 shared_ptr<Block> CFG::getEntry() const {
-    if (!built)
+    if (built)
         return entry;
     throw std::runtime_error("CFG not built yet, don't have an entry!");
 }
