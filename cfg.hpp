@@ -39,10 +39,20 @@ class CFG {
     set<string> getDominatees(string) const;
     set<string> getStrictDominatees(string) const;
     set<string> getImmDominatees(string) const;
+    map<string, set<string>> getImmDominateeMap() const;
     // compute the dominators of all blocks in this cfg
     void computeDominators();
     void computeDominatees();
     void computeImmDominatees();
+
+    struct domTreeNode {
+        domTreeNode(const string strLabel) : label(strLabel) {}
+        string label;
+        vector<unique_ptr<domTreeNode>> children;
+    };
+    domTreeNode &getDomTree() const;
+    void buildDomTree(const string, const map<string, set<string>>);
+    void printTree(domTreeNode &, int);
 
   private:
     // raw json representation of this function's cfg
@@ -72,4 +82,8 @@ class CFG {
     map<string, set<string>> strictDominateeMap;
     // map from a block to its immediate dominatees
     map<string, set<string>> immDominatees;
+
+    unique_ptr<domTreeNode> tree;
+    void populateTree(domTreeNode *, const string,
+                      const map<string, set<string>>);
 };

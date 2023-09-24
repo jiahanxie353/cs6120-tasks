@@ -6,6 +6,8 @@
 #include "../../utils.hpp"
 #include "./utils.h"
 
+using domTreeNode = CFG::domTreeNode;
+
 bool isDominator(string dominator, string dominatee, CFG &cfg) {
     string entry = cfg.getEntry()->getLabel();
 
@@ -56,6 +58,9 @@ void dominatorTest(string brilFile, string fcnName, string dominatee) {
     cfg.computeDominators();
     cfg.computeDominatees();
     cfg.computeImmDominatees();
+    cfg.buildDomTree(cfg.getEntry()->getLabel(), cfg.getImmDominateeMap());
+    cfg.printTree(cfg.getDomTree(), 0);
+
     for (const auto dominator : cfg.getDominators(dominatee))
         assert(isDominator(dominator, dominatee, cfg) == true);
 }

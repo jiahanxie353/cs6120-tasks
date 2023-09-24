@@ -14,6 +14,7 @@ using std::set;
 using std::shared_ptr;
 using std::string;
 using std::tuple;
+using std::unique_ptr;
 using std::vector;
 
 using json = nlohmann::json;

@@ -12,6 +12,8 @@ bool isTerminator(Instr *instr) {
                                               "op")) != TERMINATOR_OPS.end()));
 }
 
+using domTreeNode = CFG::domTreeNode;
+
 CFG::CFG(json &brilFcn) {
     this->rawBrilFcn = brilFcn;
 
@@ -230,6 +232,39 @@ void CFG::computeImmDominatees() {
     }
 }
 
+void CFG::populateTree(domTreeNode *currentNode, const string dominator,
+                       const map<string, set<string>> immDominateesMap) {
+    auto it = immDominateesMap.find(dominator);
+    if (it != immDominateesMap.end()) {
+        for (const string dominatee : it->second) {
+            unique_ptr<domTreeNode> childNode =
+                std::make_unique<domTreeNode>(dominatee);
+            populateTree(childNode.get(), dominatee, immDominateesMap);
+            currentNode->children.push_back(std::move(childNode));
+        }
+    }
+}
+
+void CFG::buildDomTree(const string root,
+                       const map<string, set<string>> immDominateesMap) {
+    if (!tree) {
+        tree = std::make_unique<domTreeNode>(root);
+    }
+
+    populateTree(tree.get(), root, immDominateesMap);
+}
+
+void CFG::printTree(domTreeNode &dTNode, int level) {
+    std::cout << string(4 * level, ' ');
+    std::cout << dTNode.label << std::endl;
+    for (const auto &child : dTNode.children) {
+        printTree(*child, ++level);
+        --level;
+    }
+}
+
+domTreeNode &CFG::getDomTree() const { return *tree; }
+
 set<string> CFG::getDominators(string dominatee) const {
     return dominatorsMap.at(dominatee);
 }
@@ -248,6 +283,10 @@ set<string> CFG::getStrictDominatees(string dominator) const {
 
 set<string> CFG::getImmDominatees(string dominator) const {
     return immDominatees.at(dominator);
+}
+
+map<string, set<string>> CFG::getImmDominateeMap() const {
+    return immDominatees;
 }
 
 bool CFG::contains(const string blockLabel) const {
