@@ -20,6 +20,7 @@ class CFG {
     json getFullFcn() const;
     // returns all basic blocks (list of lists of instructions) of this cfg
     vector<shared_ptr<Block>> getBasicBlocks() const;
+    set<string> getAllLabels() const;
     // return the block with label name `label` in this cfg
     shared_ptr<Block> getBlock(const string label) const;
     // returns the CFG of this function
@@ -52,6 +53,7 @@ class CFG {
     };
     domTreeNode &getDomTree() const;
     void buildDomTree(const string, const map<string, set<string>>);
+    set<string> getDomFrontier(string);
     void printTree(domTreeNode &, int);
 
   private:
@@ -82,6 +84,10 @@ class CFG {
     map<string, set<string>> strictDominateeMap;
     // map from a block to its immediate dominatees
     map<string, set<string>> immDominatees;
+    // the set of nodes that are just one edge away from being dominated by a
+    // given node
+    map<string, set<string>> domFrontier;
+    void computeDomFrontier();
 
     unique_ptr<domTreeNode> tree;
     void populateTree(domTreeNode *, const string,

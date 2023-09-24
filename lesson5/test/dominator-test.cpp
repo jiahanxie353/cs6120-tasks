@@ -61,6 +61,7 @@ void dominatorTest(string brilFile, string fcnName, string dominatee) {
     cfg.buildDomTree(cfg.getEntry()->getLabel(), cfg.getImmDominateeMap());
     cfg.printTree(cfg.getDomTree(), 0);
 
+    set<string> froniter = cfg.getDomFrontier("body");
     for (const auto dominator : cfg.getDominators(dominatee))
         assert(isDominator(dominator, dominatee, cfg) == true);
 }

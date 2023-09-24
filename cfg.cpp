@@ -198,6 +198,11 @@ void CFG::computeDominatees() {
     if (dominatorsMap.size() == 0)
         computeDominators();
 
+    for (const auto block : getAllLabels()) {
+        dominateesMap[block] = {};
+        strictDominateeMap[block] = {};
+    }
+
     for (const auto [dominatee, dominators] : dominatorsMap) {
         for (const auto dominator : dominators) {
             dominateesMap[dominator].insert(dominatee);
@@ -212,6 +217,9 @@ void CFG::computeImmDominatees() {
     if (strictDominateeMap.size() == 0)
         computeDominatees();
 
+    for (const auto block : getAllLabels()) {
+        immDominatees[block] = {};
+    }
     // A immediate dominates B iff A dominates B but A does not strictly
     // dominate any other node that strictly dominates B
     for (const auto block : getBasicBlocks()) {
@@ -252,6 +260,45 @@ void CFG::buildDomTree(const string root,
     }
 
     populateTree(tree.get(), root, immDominateesMap);
+}
+
+void CFG::computeDomFrontier() {
+    // `A`’s dominance frontier contains `B` iff `A` does not strictly
+    // dominate `B`, but `A` does dominate some predecessor of `B`
+    set<string> allLabels = getAllLabels();
+    for (const auto block : allLabels) {
+        domFrontier[block] = {};
+    }
+    for (const auto blockLabel : allLabels) {
+        // take set difference of ALL blocks and the dominatees of the current
+        // block. iterate over that difference set, and get the dominatees of
+        // each block check whether dominatee.getPredecessor() has common
+        // elements with currBlock.dominatees
+        set<string> currDominatees = getDominatees(blockLabel);
+        set<string> diffSet;
+        std::set_difference(allLabels.begin(), allLabels.end(),
+                            currDominatees.begin(), currDominatees.end(),
+                            std::inserter(diffSet, diffSet.end()));
+        for (const auto diffElm : diffSet) {
+            for (const auto elmDomee : getImmDominatees(diffElm)) {
+                for (const auto pred :
+                     label2Block.at(elmDomee)->getPredecessors()) {
+                    if (currDominatees.find(pred->getLabel()) !=
+                        currDominatees.end()) {
+                        domFrontier[blockLabel].insert(elmDomee);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+set<string> CFG::getDomFrontier(string nodeLabel) {
+    if (domFrontier.size() == 0)
+        computeDomFrontier();
+
+    return domFrontier.at(nodeLabel);
 }
 
 void CFG::printTree(domTreeNode &dTNode, int level) {
@@ -311,6 +358,13 @@ int CFG::getSize() const {
 }
 
 vector<shared_ptr<Block>> CFG::getBasicBlocks() const { return basicBlocks; }
+
+set<string> CFG::getAllLabels() const {
+    set<string> allBlocks;
+    for (const auto block : basicBlocks)
+        allBlocks.insert(block->getLabel());
+    return allBlocks;
+}
 
 shared_ptr<Block> CFG::getEntry() const {
     if (built)
