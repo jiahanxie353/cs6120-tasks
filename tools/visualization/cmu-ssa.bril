@@ -1,0 +1,40 @@
+@main {
+.block1:
+    i0: int = const 0;
+    i1: int = const 1;
+    b1: bool = eq i0 i1;
+    br b1 .block2 .block5;
+.block2:
+    i2: int = const 2;
+    jmp .block3;
+.block3:
+    i3: int = const 3;
+    b3: bool = eq i2 i3;
+    br b3 .block3 .block4;
+.block4:
+    i4: int = const 4;
+    jmp .block10;
+.block5:
+    i5: int = const 5;
+    b5: bool = eq i0 i5;
+    br b5 .block6 .block7;
+.block6:
+    i6: int = const 6;
+    b6: bool = eq i5 i6;
+    br b6 .block4 .block8;
+.block7:
+    i7: int = const 7;
+    b7: bool = lt i5 i7;
+    br b7 .block8 .block9;
+.block8:
+    i8: int = const 8;
+    b8: bool = eq i5 i8;
+    br b8 .block5 .block10;
+.block9:
+    i9: int = const 9;
+    jmp .block10;
+.block10:
+    i42: int = const 42;
+    print i42;
+    ret;
+}
