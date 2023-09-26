@@ -35,16 +35,12 @@ class CFG {
     // visualize the control flow graph using graphviz
     void visualize();
     // get the dominators of a block in this cfg
-    set<string> getDominators(string) const;
-    set<string> getStrictDominators(string) const;
-    set<string> getDominatees(string) const;
-    set<string> getStrictDominatees(string) const;
-    set<string> getImmDominatees(string) const;
-    map<string, set<string>> getImmDominateeMap() const;
-    // compute the dominators of all blocks in this cfg
-    void computeDominators();
-    void computeDominatees();
-    void computeImmDominatees();
+    set<string> getDominators(string);
+    set<string> getStrictDominators(string);
+    set<string> getDominatees(string);
+    set<string> getStrictDominatees(string);
+    set<string> getImmDominatees(string);
+    map<string, set<string>> getImmDominateeMap();
 
     struct domTreeNode {
         domTreeNode(const string strLabel) : label(strLabel) {}
@@ -54,7 +50,7 @@ class CFG {
     domTreeNode &getDomTree() const;
     void buildDomTree(const string, const map<string, set<string>>);
     set<string> getDomFrontier(string);
-    void printTree(domTreeNode &, int);
+    void printTree(domTreeNode &, int, std::ostream &os = std::cout);
 
   private:
     // raw json representation of this function's cfg
@@ -87,6 +83,13 @@ class CFG {
     // the set of nodes that are just one edge away from being dominated by a
     // given node
     map<string, set<string>> domFrontier;
+    // compute the dominators (and strict dominators along the way) of all
+    // blocks in this cfg
+    void computeDominators();
+    // compute the dominatees (and strict dominatees along the way) of all
+    // blocks in this cfg
+    void computeDominatees();
+    void computeImmDominatees();
     void computeDomFrontier();
 
     unique_ptr<domTreeNode> tree;

@@ -301,38 +301,50 @@ set<string> CFG::getDomFrontier(string nodeLabel) {
     return domFrontier.at(nodeLabel);
 }
 
-void CFG::printTree(domTreeNode &dTNode, int level) {
-    std::cout << string(4 * level, ' ');
-    std::cout << dTNode.label << std::endl;
+void CFG::printTree(domTreeNode &dTNode, int level, std::ostream &os) {
+    os << string(4 * level, ' ');
+    os << dTNode.label << std::endl;
     for (const auto &child : dTNode.children) {
-        printTree(*child, ++level);
+        printTree(*child, ++level, os);
         --level;
     }
 }
 
 domTreeNode &CFG::getDomTree() const { return *tree; }
 
-set<string> CFG::getDominators(string dominatee) const {
+set<string> CFG::getDominators(string dominatee) {
+    if (dominateesMap.size() == 0)
+        computeDominators();
     return dominatorsMap.at(dominatee);
 }
 
-set<string> CFG::getStrictDominators(string dominatee) const {
+set<string> CFG::getStrictDominators(string dominatee) {
+    if (strictDominatorMap.size() == 0)
+        computeDominators();
     return strictDominatorMap.at(dominatee);
 }
 
-set<string> CFG::getDominatees(string dominator) const {
+set<string> CFG::getDominatees(string dominator) {
+    if (dominateesMap.size() == 0)
+        computeDominatees();
     return dominateesMap.at(dominator);
 }
 
-set<string> CFG::getStrictDominatees(string dominator) const {
+set<string> CFG::getStrictDominatees(string dominator) {
+    if (strictDominateeMap.size() == 0)
+        computeDominatees();
     return strictDominateeMap.at(dominator);
 }
 
-set<string> CFG::getImmDominatees(string dominator) const {
+set<string> CFG::getImmDominatees(string dominator) {
+    if (immDominatees.size() == 0)
+        computeImmDominatees();
     return immDominatees.at(dominator);
 }
 
-map<string, set<string>> CFG::getImmDominateeMap() const {
+map<string, set<string>> CFG::getImmDominateeMap() {
+    if (immDominatees.size() == 0)
+        computeImmDominatees();
     return immDominatees;
 }
 

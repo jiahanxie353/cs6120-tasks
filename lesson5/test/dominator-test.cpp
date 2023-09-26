@@ -55,23 +55,56 @@ void dominatorTest(string brilFile, string fcnName, string dominatee) {
     if (!foundDE)
         throw std::runtime_error("Dominatee block not found!");
 
-    cfg.computeDominators();
-    cfg.computeDominatees();
-    cfg.computeImmDominatees();
-    cfg.buildDomTree(cfg.getEntry()->getLabel(), cfg.getImmDominateeMap());
-    cfg.printTree(cfg.getDomTree(), 0);
-
-    set<string> froniter = cfg.getDomFrontier("body");
+    for (const auto &frontier : cfg.getDomFrontier("block5"))
+        std::cout << frontier << std::endl;
     for (const auto dominator : cfg.getDominators(dominatee))
         assert(isDominator(dominator, dominatee, cfg) == true);
 }
 
-int main(int argc, char *argv[]) {
-    string brilFile = argv[1];
-    string fcnName = argv[2];
-    string dominatee = argv[3];
+void domTreeTest(string brilFile, string fcnName, string os) {
+    json brilProg = readJson(brilFile);
+    for (auto &brilFcn : brilProg.at("functions")) {
+        if (brilFcn.at("name") == fcnName) {
+            CFG cfg(brilFcn);
+            cfg.buildDomTree(cfg.getEntry()->getLabel(),
+                             cfg.getImmDominateeMap());
 
-    dominatorTest(brilFile, fcnName, dominatee);
+            if (os != "cout") {
+                string outputJsonName = string(brilFile);
+                size_t dotPos = outputJsonName.rfind('.');
+                if (dotPos != string::npos) {
+                    string treeStr = "tree.";
+                    outputJsonName.insert(dotPos + 1, treeStr.append(os));
+                    outputJsonName =
+                        outputJsonName.substr(0, outputJsonName.size() - 4);
+                }
+                std::ofstream outfile(outputJsonName);
+                cfg.printTree(cfg.getDomTree(), 0, outfile);
+            } else {
+                cfg.printTree(cfg.getDomTree(), 0);
+            }
+
+            return;
+        }
+    }
+    throw std::runtime_error("Function not found!");
+}
+
+int main(int argc, char *argv[]) {
+    assert(argc >= 4);
+
+    string testSwitch = argv[1];
+    string brilFile = argv[2];
+    string fcnName = argv[3];
+
+    if (testSwitch == "tree") {
+        string os = argv[4];
+        domTreeTest(brilFile, fcnName, os);
+    } else if (testSwitch == "frontier") {
+        string node = argv[4];
+    } else {
+        throw std::runtime_error("Invalid test type!\n");
+    }
 
     return EXIT_SUCCESS;
 }

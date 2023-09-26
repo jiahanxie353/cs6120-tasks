@@ -1,0 +1,3 @@
+[envs.tree]
+command = "./test/dom tree {filename} {args}"
+output."tree.txt" = "-"

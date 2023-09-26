@@ -1,0 +1,246 @@
+{
+  "functions": [
+    {
+      "instrs": [
+        {
+          "label": "block1"
+        },
+        {
+          "dest": "i0",
+          "op": "const",
+          "type": "int",
+          "value": 0
+        },
+        {
+          "dest": "i1",
+          "op": "const",
+          "type": "int",
+          "value": 1
+        },
+        {
+          "args": [
+            "i0",
+            "i1"
+          ],
+          "dest": "b1",
+          "op": "eq",
+          "type": "bool"
+        },
+        {
+          "args": [
+            "b1"
+          ],
+          "labels": [
+            "block2",
+            "block5"
+          ],
+          "op": "br"
+        },
+        {
+          "label": "block2"
+        },
+        {
+          "dest": "i2",
+          "op": "const",
+          "type": "int",
+          "value": 2
+        },
+        {
+          "labels": [
+            "block3"
+          ],
+          "op": "jmp"
+        },
+        {
+          "label": "block3"
+        },
+        {
+          "dest": "i3",
+          "op": "const",
+          "type": "int",
+          "value": 3
+        },
+        {
+          "args": [
+            "i2",
+            "i3"
+          ],
+          "dest": "b3",
+          "op": "eq",
+          "type": "bool"
+        },
+        {
+          "args": [
+            "b3"
+          ],
+          "labels": [
+            "block3",
+            "block4"
+          ],
+          "op": "br"
+        },
+        {
+          "label": "block4"
+        },
+        {
+          "dest": "i4",
+          "op": "const",
+          "type": "int",
+          "value": 4
+        },
+        {
+          "labels": [
+            "block10"
+          ],
+          "op": "jmp"
+        },
+        {
+          "label": "block5"
+        },
+        {
+          "dest": "i5",
+          "op": "const",
+          "type": "int",
+          "value": 5
+        },
+        {
+          "args": [
+            "i0",
+            "i5"
+          ],
+          "dest": "b5",
+          "op": "eq",
+          "type": "bool"
+        },
+        {
+          "args": [
+            "b5"
+          ],
+          "labels": [
+            "block6",
+            "block7"
+          ],
+          "op": "br"
+        },
+        {
+          "label": "block6"
+        },
+        {
+          "dest": "i6",
+          "op": "const",
+          "type": "int",
+          "value": 6
+        },
+        {
+          "args": [
+            "i5",
+            "i6"
+          ],
+          "dest": "b6",
+          "op": "eq",
+          "type": "bool"
+        },
+        {
+          "args": [
+            "b6"
+          ],
+          "labels": [
+            "block4",
+            "block8"
+          ],
+          "op": "br"
+        },
+        {
+          "label": "block7"
+        },
+        {
+          "dest": "i7",
+          "op": "const",
+          "type": "int",
+          "value": 7
+        },
+        {
+          "args": [
+            "i5",
+            "i7"
+          ],
+          "dest": "b7",
+          "op": "lt",
+          "type": "bool"
+        },
+        {
+          "args": [
+            "b7"
+          ],
+          "labels": [
+            "block8",
+            "block9"
+          ],
+          "op": "br"
+        },
+        {
+          "label": "block8"
+        },
+        {
+          "dest": "i8",
+          "op": "const",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "args": [
+            "i5",
+            "i8"
+          ],
+          "dest": "b8",
+          "op": "eq",
+          "type": "bool"
+        },
+        {
+          "args": [
+            "b8"
+          ],
+          "labels": [
+            "block5",
+            "block10"
+          ],
+          "op": "br"
+        },
+        {
+          "label": "block9"
+        },
+        {
+          "dest": "i9",
+          "op": "const",
+          "type": "int",
+          "value": 9
+        },
+        {
+          "labels": [
+            "block10"
+          ],
+          "op": "jmp"
+        },
+        {
+          "label": "block10"
+        },
+        {
+          "dest": "i42",
+          "op": "const",
+          "type": "int",
+          "value": 42
+        },
+        {
+          "args": [
+            "i42"
+          ],
+          "op": "print"
+        },
+        {
+          "op": "ret"
+        }
+      ],
+      "name": "main"
+    }
+  ]
+}
