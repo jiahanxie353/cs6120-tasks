@@ -1,9 +1,9 @@
 #include "block.hpp"
 
 void Block::computeDefVars() {
-    for (const auto instr : this->getInstrs()) {
+    for (const auto instr : getInstrs()) {
         if (instr->contains("dest"))
-            this->definedVars.insert(instr->at("dest").get<string>());
+            definedVars.insert(instr->at("dest").get<string>());
     }
 }
 
@@ -16,24 +16,22 @@ bool Block::hasField(string fieldName, string value) const {
     return false;
 }
 
-vector<Instr *> Block::getInstrs() const { return this->instructions; }
+vector<Instr *> Block::getInstrs() const { return instructions; }
 
 string Block::getLabel() const { return label; }
 
 vector<shared_ptr<Block>> Block::getPredecessors() const {
-    return this->predecessors;
+    return predecessors;
 }
 
-vector<shared_ptr<Block>> Block::getSuccessors() const {
-    return this->successors;
-}
+vector<shared_ptr<Block>> Block::getSuccessors() const { return successors; }
 
-void Block::setLabel(string labelName) { this->label = labelName; }
+void Block::setLabel(string labelName) { label = labelName; }
 
 void Block::addPredecessor(shared_ptr<Block> block) {
-    this->predecessors.push_back(block);
+    predecessors.push_back(block);
 }
 
 void Block::addSuccessor(shared_ptr<Block> block) {
-    this->successors.push_back(block);
+    successors.push_back(block);
 }
