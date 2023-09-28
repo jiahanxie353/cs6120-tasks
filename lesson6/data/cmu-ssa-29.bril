@@ -1,0 +1,28 @@
+@main {
+.block1:
+    i: int = const 1;
+    j: int = const 1;
+    k: int = const 0;
+.block2:
+    hundred: int = const 100;
+    k_hd: bool = lt k hundred;
+    br k_hd .block3 .block4;
+.block3:
+    twenty: int = const 20;
+    j_twt: bool = lt j_twt twenty;
+    br j_twt .block5 .block6;
+.block4:
+    ret j;
+.block5:
+    one: int = const 1;
+    j: int = id i;
+    k: int = add k one;
+    jmp .block7;
+.block6:
+    two: int = const 2;
+    j: int = id k;
+    k: int = add k two;
+    jmp .block7;
+.block7:
+    jmp .block2;
+}
