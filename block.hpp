@@ -7,7 +7,7 @@
 #include <tuple>
 #include <vector>
 
-#include "utils.hpp"
+#include "utils.h"
 
 using std::map;
 using std::set;
@@ -63,6 +63,8 @@ class Block {
             return killedVars;
         }
     }
+
+    void insertInstr(Instr *, int);
 
   private:
     friend class CFG;

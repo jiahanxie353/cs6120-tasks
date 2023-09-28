@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "block.hpp"
-#include "utils.hpp"
+#include "utils.h"
 
 class CFG {
   public:
@@ -16,8 +16,8 @@ class CFG {
     // build a cfg out of a json-represented bril function
     CFG(json &brilFcn);
     int getSize() const;
-    // returns the full, parsed, json-represented bril program
-    json getFullFcn() const;
+    // return the bril function represented in json
+    json &getBrilJson();
     // returns all basic blocks (list of lists of instructions) of this cfg
     vector<shared_ptr<Block>> getBasicBlocks() const;
     set<string> getAllLabels() const;
@@ -41,6 +41,8 @@ class CFG {
     set<string> getStrictDominatees(string);
     set<string> getImmDominatees(string);
     map<string, set<string>> getImmDominateeMap();
+    // get all variable names in this cfg
+    set<string> getAllVars() const;
 
     struct domTreeNode {
         domTreeNode(const string strLabel) : label(strLabel) {}

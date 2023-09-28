@@ -63,7 +63,7 @@ void CFG::nameBlocks(vector<shared_ptr<Block>> basicBlocks) {
         else
             blockName = "b" + std::to_string(mapSize);
         block->setLabel(blockName);
-        this->label2Block.insert({blockName, block});
+        label2Block.insert({blockName, block});
         mapSize += 1;
     }
 }
@@ -378,6 +378,14 @@ set<string> CFG::getAllLabels() const {
     return allBlocks;
 }
 
+set<string> CFG::getAllVars() const {
+    set<string> allVars;
+    for (const auto &block : getBasicBlocks()) {
+        allVars.insert(block->definedVars.begin(), block->definedVars.end());
+    }
+    return allVars;
+}
+
 shared_ptr<Block> CFG::getEntry() const {
     if (built)
         return entry;
@@ -388,6 +396,8 @@ vector<shared_ptr<Block>> CFG::getExists() const { return exits; }
 shared_ptr<Block> CFG::getExitSink() const { return exitSink; }
 
 map<string, vector<string>> CFG::getCFG() const { return cfg; }
+
+json &CFG::getBrilJson() { return rawBrilFcn; }
 
 void CFG::visualize() {
     std::cout << "digraph " << rawBrilFcn.at("name").dump() << " {"

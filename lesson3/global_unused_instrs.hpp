@@ -5,7 +5,7 @@
 #include <nlohmann/json.hpp>
 #include <set>
 
-#include "../utils.hpp"
+#include "../utils.h"
 
 using json = nlohmann::json;
 

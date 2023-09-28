@@ -1,4 +1,7 @@
-#include "utils.hpp"
+#include "utils.h"
+
+using std::string;
+using std::vector;
 
 json readJson(std::string fileName) {
     std::ifstream jsonFile(fileName);
@@ -16,7 +19,7 @@ std::ofstream genOutFile(std::string inputName, std::string ext) {
     return outfile;
 }
 
-bool removeNullValues(json& value) {
+bool removeNullValues(json &value) {
     if (value.is_object()) {
         std::vector<std::string> keysToRemove;
 
@@ -29,7 +32,7 @@ bool removeNullValues(json& value) {
                 }
             }
         }
-        for (const auto& key : keysToRemove) {
+        for (const auto &key : keysToRemove) {
             value.erase(key);
         }
         return value.empty();
@@ -46,4 +49,10 @@ bool removeNullValues(json& value) {
         }
     }
     return value.is_null() || (value.is_object() && value.empty());
+}
+
+json *instrToJson(string op, string dest, vector<string> args, string type) {
+    json *j =
+        new json{{"op", op}, {"dest", dest}, {"args", args}, {"type", type}};
+    return j;
 }

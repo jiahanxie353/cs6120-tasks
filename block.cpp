@@ -18,6 +18,10 @@ bool Block::hasField(string fieldName, string value) const {
 
 vector<Instr *> Block::getInstrs() const { return instructions; }
 
+void Block::insertInstr(Instr *instr, int pos) {
+    instructions.insert(instructions.begin() + pos, instr);
+}
+
 string Block::getLabel() const { return label; }
 
 vector<shared_ptr<Block>> Block::getPredecessors() const {
