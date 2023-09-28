@@ -24,31 +24,13 @@
           "value": 0
         },
         {
+          "label": "block2"
+        },
+        {
           "dest": "hundred",
           "op": "const",
           "type": "int",
           "value": 100
-        },
-        {
-          "dest": "twenty",
-          "op": "const",
-          "type": "int",
-          "value": 20
-        },
-        {
-          "dest": "one",
-          "op": "const",
-          "type": "int",
-          "value": 1
-        },
-        {
-          "dest": "two",
-          "op": "const",
-          "type": "int",
-          "value": 2
-        },
-        {
-          "label": "block2"
         },
         {
           "args": [
@@ -71,6 +53,12 @@
         },
         {
           "label": "block3"
+        },
+        {
+          "dest": "twenty",
+          "op": "const",
+          "type": "int",
+          "value": 20
         },
         {
           "args": [
@@ -104,6 +92,12 @@
           "label": "block5"
         },
         {
+          "dest": "one",
+          "op": "const",
+          "type": "int",
+          "value": 1
+        },
+        {
           "args": [
             "i"
           ],
@@ -128,6 +122,12 @@
         },
         {
           "label": "block6"
+        },
+        {
+          "dest": "two",
+          "op": "const",
+          "type": "int",
+          "value": 2
         },
         {
           "args": [
