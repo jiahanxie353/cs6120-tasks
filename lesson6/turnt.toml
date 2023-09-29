@@ -1,0 +1,3 @@
+[envs.tossa]
+command = "./tossa {filename}"
+output."tossa.json" = "-"
