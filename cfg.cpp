@@ -15,7 +15,7 @@ bool isTerminator(Instr *instr) {
 using domTreeNode = CFG::domTreeNode;
 
 CFG::CFG(json &brilFcn) {
-    this->rawBrilFcn = brilFcn;
+    rawBrilFcn = brilFcn;
 
     vector<Instr *> currInstrs;
     for (auto &instr : brilFcn.at("instrs")) {
@@ -380,6 +380,11 @@ set<string> CFG::getAllLabels() const {
 
 set<string> CFG::getAllVars() const {
     set<string> allVars;
+    if (rawBrilFcn.contains("args")) {
+        for (const auto &arg : rawBrilFcn.at("args")) {
+            allVars.insert(arg.at("name").get<string>());
+        }
+    }
     for (const auto &block : getBasicBlocks()) {
         allVars.insert(block->definedVars.begin(), block->definedVars.end());
     }
