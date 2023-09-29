@@ -62,7 +62,7 @@
         },
         {
           "args": [
-            "j_twt",
+            "j",
             "twenty"
           ],
           "dest": "j_twt",

@@ -65,12 +65,13 @@ void rename(CFG &cfg, shared_ptr<Block> block, map<string, stack> &stackMap,
     map<string, int> pushed;
     for (auto &instr : block->getInstrs()) {
         // replace each argument to instr w/ stack[old name]
-        if (instr->contains("args")) {
+        if (instr->contains("args") && instr->contains("op") &&
+            instr->at("op").get<string>() != "phi") {
             for (auto &arg : instr->at("args")) {
-                string orig = origName[arg.get<string>()];
-                if (orig == "")
-                    continue;
-                arg = stackMap[orig].top();
+                if (origName.find(arg.get<string>()) != origName.end()) {
+                    string orig = origName[arg.get<string>()];
+                    arg = stackMap[orig].top();
+                }
             }
         }
 

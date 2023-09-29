@@ -1,0 +1,212 @@
+{
+    "functions": [
+        {
+            "instrs": [
+                {
+                    "label": "block1"
+                },
+                {
+                    "dest": "i1",
+                    "op": "const",
+                    "type": "int",
+                    "value": 1
+                },
+                {
+                    "dest": "j1",
+                    "op": "const",
+                    "type": "int",
+                    "value": 1
+                },
+                {
+                    "dest": "k1",
+                    "op": "const",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "label": "block2"
+                },
+                {
+                    "args": [
+                        "block1",
+                        "k1",
+                        "block7",
+                        "k5"
+                    ],
+                    "dest": "k2",
+                    "op": "phi",
+                    "type": "int"
+                },
+                {
+                    "args": [
+                        "block1",
+                        "j1",
+                        "block7",
+                        "j5"
+                    ],
+                    "dest": "j2",
+                    "op": "phi",
+                    "type": "int"
+                },
+                {
+                    "dest": "hundred1",
+                    "op": "const",
+                    "type": "int",
+                    "value": 100
+                },
+                {
+                    "args": [
+                        "k2",
+                        "hundred1"
+                    ],
+                    "dest": "k_hd1",
+                    "op": "lt",
+                    "type": "bool"
+                },
+                {
+                    "args": [
+                        "k_hd1"
+                    ],
+                    "labels": [
+                        "block3",
+                        "block4"
+                    ],
+                    "op": "br"
+                },
+                {
+                    "label": "block3"
+                },
+                {
+                    "dest": "twenty1",
+                    "op": "const",
+                    "type": "int",
+                    "value": 20
+                },
+                {
+                    "args": [
+                        "j2",
+                        "twenty1"
+                    ],
+                    "dest": "j_twt1",
+                    "op": "lt",
+                    "type": "bool"
+                },
+                {
+                    "args": [
+                        "j_twt1"
+                    ],
+                    "labels": [
+                        "block5",
+                        "block6"
+                    ],
+                    "op": "br"
+                },
+                {
+                    "label": "block4"
+                },
+                {
+                    "args": [
+                        "j2"
+                    ],
+                    "op": "ret"
+                },
+                {
+                    "label": "block5"
+                },
+                {
+                    "dest": "one1",
+                    "op": "const",
+                    "type": "int",
+                    "value": 1
+                },
+                {
+                    "args": [
+                        "i1"
+                    ],
+                    "dest": "j3",
+                    "op": "id",
+                    "type": "int"
+                },
+                {
+                    "args": [
+                        "k2",
+                        "one1"
+                    ],
+                    "dest": "k3",
+                    "op": "add",
+                    "type": "int"
+                },
+                {
+                    "labels": [
+                        "block7"
+                    ],
+                    "op": "jmp"
+                },
+                {
+                    "label": "block6"
+                },
+                {
+                    "dest": "two1",
+                    "op": "const",
+                    "type": "int",
+                    "value": 2
+                },
+                {
+                    "args": [
+                        "k2"
+                    ],
+                    "dest": "j4",
+                    "op": "id",
+                    "type": "int"
+                },
+                {
+                    "args": [
+                        "k2",
+                        "two1"
+                    ],
+                    "dest": "k4",
+                    "op": "add",
+                    "type": "int"
+                },
+                {
+                    "labels": [
+                        "block7"
+                    ],
+                    "op": "jmp"
+                },
+                {
+                    "label": "block7"
+                },
+                {
+                    "args": [
+                        "block5",
+                        "k3",
+                        "block6",
+                        "k4"
+                    ],
+                    "dest": "k5",
+                    "op": "phi",
+                    "type": "int"
+                },
+                {
+                    "args": [
+                        "block5",
+                        "j3",
+                        "block6",
+                        "j4"
+                    ],
+                    "dest": "j5",
+                    "op": "phi",
+                    "type": "int"
+                },
+                {
+                    "labels": [
+                        "block2"
+                    ],
+                    "op": "jmp"
+                }
+            ],
+            "name": "main"
+        }
+    ]
+}

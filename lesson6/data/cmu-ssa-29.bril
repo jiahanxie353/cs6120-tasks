@@ -9,7 +9,7 @@
     br k_hd .block3 .block4;
 .block3:
     twenty: int = const 20;
-    j_twt: bool = lt j_twt twenty;
+    j_twt: bool = lt j twenty;
     br j_twt .block5 .block6;
 .block4:
     ret j;
