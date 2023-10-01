@@ -40,6 +40,9 @@ class Block {
     // returns the successors of this basic block
     vector<shared_ptr<Block>> getSuccessors() const;
     bool hasField(string, string) const;
+    void removeInstr(int pos);
+
+    ~Block();
 
     template <class T> set<T> getDefined() const {
         if (std::is_same<T, Var>::value) {
@@ -70,10 +73,13 @@ class Block {
     friend class CFG;
 
     void setLabel(const string);
-    void addPredecessor(shared_ptr<Block>);
-    void addSuccessor(shared_ptr<Block>);
 
     void computeDefVars();
+
+    void addPredecessor(shared_ptr<Block>);
+    void addSuccessor(shared_ptr<Block>);
+    void removePredecessor(shared_ptr<Block>);
+    void removeSuccessor(shared_ptr<Block>);
 
     string label;
     vector<Instr *> instructions;

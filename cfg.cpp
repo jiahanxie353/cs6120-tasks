@@ -1,9 +1,12 @@
 #include "cfg.hpp"
 
+#include <deque>
 #include <set>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+using deque = std::deque<string>;
 
 set<string> TERMINATOR_OPS = {"jmp", "br", "ret"};
 
@@ -122,6 +125,34 @@ CFG::buildCFG(vector<shared_ptr<Block>> basicBlocks) {
     return cfgMap;
 }
 
+void findAllPathsUtil(deque &connectPath, vector<deque> &connectPaths,
+                      shared_ptr<Block> node, shared_ptr<Block> targeNode) {
+    for (const auto &succ : node->getSuccessors()) {
+        if (succ->getLabel() == targeNode->getLabel()) {
+            deque tmpDeck;
+            for (const auto cP : connectPath)
+                tmpDeck.push_front(cP);
+            tmpDeck.push_back(targeNode->getLabel());
+            connectPaths.push_back(tmpDeck);
+        } else if (std::find(connectPath.begin(), connectPath.end(),
+                             succ->getLabel()) == connectPath.end()) {
+            connectPath.push_front(succ->getLabel());
+            findAllPathsUtil(connectPath, connectPaths, succ, targeNode);
+            connectPath.pop_front();
+        }
+    }
+}
+
+vector<deque> CFG::findAllPaths(shared_ptr<Block> node,
+                                shared_ptr<Block> targetNode) {
+    deque connectPath = {node->getLabel()};
+    vector<deque> connectPaths = {connectPath};
+
+    findAllPathsUtil(connectPath, connectPaths, node, targetNode);
+
+    return connectPaths;
+}
+
 set<string> multipleSetsIntersect(vector<set<string>> allSets) {
     // find the set with the smallest size, make that as the starting point
     set<string> smallest;
@@ -153,6 +184,20 @@ set<string> multipleSetsIntersect(vector<set<string>> allSets) {
     }
 
     return smallest;
+}
+
+void CFG::insertBtw(shared_ptr<Block> newBlock, shared_ptr<Block> origPred,
+                    shared_ptr<Block> origSucc) {
+    origPred->removeSuccessor(origSucc);
+    origPred->addSuccessor(newBlock);
+    newBlock->addPredecessor(origPred);
+    newBlock->addSuccessor(origSucc);
+    origSucc->removePredecessor(origPred);
+    origSucc->addPredecessor(newBlock);
+
+    newBlock->setLabel("block" + std::to_string(basicBlocks.size() + 1));
+    newBlock->insertInstr(new Instr{{"label", newBlock->getLabel()}}, 0);
+    basicBlocks.push_back(newBlock);
 }
 
 void CFG::computeDominators() {

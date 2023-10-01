@@ -1,5 +1,6 @@
 #pragma once
 
+#include <deque>
 #include <iostream>
 #include <map>
 #include <set>
@@ -53,6 +54,11 @@ class CFG {
     void buildDomTree(const string, const map<string, set<string>>);
     set<string> getDomFrontier(string);
     void printTree(domTreeNode &, int, std::ostream &os = std::cout);
+    // find all paths from a block to the target block
+    vector<std::deque<string>> findAllPaths(shared_ptr<Block>,
+                                            shared_ptr<Block>);
+    void insertBtw(shared_ptr<Block> newBlock, shared_ptr<Block> pred,
+                   shared_ptr<Block> succ);
 
   private:
     // raw json representation of this function's cfg
