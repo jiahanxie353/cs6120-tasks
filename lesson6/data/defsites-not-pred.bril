@@ -1,0 +1,21 @@
+@main(cond: bool) {
+.block1:
+    i: int = const 1;
+    br cond .block2 .block3;
+.block2:
+    j: int = const 2;
+    br cond .block4 .block5;
+.block3:
+    j: int = const 3;
+    jmp .block7;
+.block4:
+    k: int = const 4;
+    jmp .block6;
+.block5:
+    l: int = const 5;
+    jmp .block6;
+.block6:
+    jmp .block7;
+.block7:
+    ret j;
+}

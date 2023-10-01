@@ -20,21 +20,12 @@ int main(int argc, char *argv[]) {
 
     json result;
     for (auto &brilFcn : brilProg.at("functions")) {
-        CFG cfg(brilFcn);
 
-        insertPhiNodes(cfg);
+        json fcnJson = toSSA(brilFcn);
 
-        renameVars(cfg);
+        fcnJson = fromSSA(fcnJson);
 
-        json fcnJson;
         result["functions"] = json::array();
-        fcnJson["name"] = "main";
-        fcnJson["instrs"] = json::array();
-        for (const auto &block : cfg.getBasicBlocks()) {
-            for (const auto &instr : block->getInstrs()) {
-                fcnJson["instrs"].push_back(*instr);
-            }
-        }
         result["functions"].push_back(fcnJson);
     }
     *os_ptr << result.dump(4);

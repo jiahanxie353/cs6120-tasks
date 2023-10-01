@@ -3,6 +3,7 @@
 #include <stack>
 
 using stack = std::stack<string>;
+using deck = std::deque<string>;
 
 void addPhiNode(shared_ptr<Block> block, string var, string varType) {
     vector<string> args(2 * block->getPredecessors().size(), var);
@@ -132,11 +133,76 @@ void renameVars(CFG &cfg) {
     rename(cfg, cfg.getEntry(), stackMap, varCount, origName);
 }
 
-json &toSSA(json &brilFcn) {
+json toSSA(json &brilFcn) {
     CFG cfg(brilFcn);
 
     insertPhiNodes(cfg);
     renameVars(cfg);
 
-    return cfg.getBrilJson();
+    json fcnJson;
+    fcnJson["name"] = "main";
+    fcnJson["instrs"] = json::array();
+    for (const auto &block : cfg.getBasicBlocks()) {
+        for (const auto &instr : block->getInstrs()) {
+            fcnJson["instrs"].push_back(*instr);
+        }
+    }
+    return fcnJson;
+}
+
+json fromSSA(json &ssaForm) {
+    CFG cfg(ssaForm);
+
+    for (auto &block : cfg.getBasicBlocks()) {
+        int phiCount = 0;
+        while ((phiCount + 1 < block->getInstrs().size()) &&
+               block->getInstrs()[phiCount + 1]->contains("op") &&
+               block->getInstrs()[phiCount + 1]->at("op") == "phi")
+            phiCount += 1;
+
+        if (phiCount > 0) {
+            for (auto &pred : block->getPredecessors()) {
+                string predLabel = pred->getLabel();
+
+                vector<Instr *> newInstrs;
+
+                for (int i = 1; i <= phiCount; ++i) {
+                    Instr *phiInstr = block->getInstrs()[i];
+                    string dest = phiInstr->at("dest");
+                    string varType = phiInstr->at("type");
+                    for (int argI = 0; argI < phiInstr->at("args").size();
+                         ++argI) {
+                        if (phiInstr->at("args")[argI].get<string>() ==
+                            predLabel)
+                            newInstrs.push_back(new Instr{
+                                {"args",
+                                 json::array({phiInstr->at("args")[argI + 1]
+                                                  .get<string>()})},
+                                {"dest", dest},
+                                {"op", "id"},
+                                {"type", varType}});
+                    }
+                }
+                shared_ptr<Block> newBlock = std::make_shared<Block>(newInstrs);
+                cfg.insertBtw(newBlock, pred, block);
+            }
+            int cntCpy = phiCount;
+            while (cntCpy > 0) {
+                block->removeInstr(cntCpy);
+                cntCpy -= 1;
+            }
+        }
+    }
+
+    json fcnJson;
+
+    fcnJson["name"] = "main";
+    fcnJson["instrs"] = json::array();
+    for (const auto &block : cfg.getBasicBlocks()) {
+        for (const auto &instr : block->getInstrs()) {
+            fcnJson["instrs"].push_back(*instr);
+        }
+    }
+
+    return fcnJson;
 }
