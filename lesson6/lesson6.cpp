@@ -20,10 +20,14 @@ int main(int argc, char *argv[]) {
 
     json result;
     for (auto &brilFcn : brilProg.at("functions")) {
+        json args = brilFcn.at("args");
 
         json fcnJson = toSSA(brilFcn);
 
         fcnJson = fromSSA(fcnJson);
+
+        if (args.size() > 0)
+            fcnJson["args"] = args;
 
         result["functions"] = json::array();
         result["functions"].push_back(fcnJson);

@@ -1,6 +1,12 @@
 {
     "functions": [
         {
+            "args": [
+                {
+                    "name": "cond",
+                    "type": "bool"
+                }
+            ],
             "instrs": [
                 {
                     "label": "entry"
