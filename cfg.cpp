@@ -210,7 +210,13 @@ void CFG::insertBtw(shared_ptr<Block> newBlock, shared_ptr<Block> origPred,
     origPred->insertInstr(
         new Instr({{"labels", {newBlock->getLabel()}}, {"op", "jmp"}}),
         origPred->getInstrs().size());
-    basicBlocks.push_back(newBlock);
+
+    for (int i = 0; i < basicBlocks.size(); ++i) {
+        if (basicBlocks[i]->getLabel() == origPred->getLabel()) {
+            basicBlocks.insert(basicBlocks.begin() + i + 1, newBlock);
+            break;
+        }
+    }
 }
 
 void CFG::computeDominators() {
