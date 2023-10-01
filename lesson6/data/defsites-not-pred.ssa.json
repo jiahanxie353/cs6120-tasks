@@ -1,6 +1,12 @@
 {
     "functions": [
         {
+            "args": [
+                {
+                    "name": "cond",
+                    "type": "bool"
+                }
+            ],
             "instrs": [
                 {
                     "label": "block1"
@@ -56,6 +62,23 @@
                     "op": "jmp"
                 },
                 {
+                    "label": "block8"
+                },
+                {
+                    "args": [
+                        "j2"
+                    ],
+                    "dest": "j3",
+                    "op": "id",
+                    "type": "int"
+                },
+                {
+                    "labels": [
+                        "block7"
+                    ],
+                    "op": "jmp"
+                },
+                {
                     "label": "block4"
                 },
                 {
@@ -95,32 +118,6 @@
                     "op": "jmp"
                 },
                 {
-                    "label": "block7"
-                },
-                {
-                    "args": [
-                        "j3"
-                    ],
-                    "op": "ret"
-                },
-                {
-                    "label": "block8"
-                },
-                {
-                    "args": [
-                        "j2"
-                    ],
-                    "dest": "j3",
-                    "op": "id",
-                    "type": "int"
-                },
-                {
-                    "labels": [
-                        "block7"
-                    ],
-                    "op": "jmp"
-                },
-                {
                     "label": "block9"
                 },
                 {
@@ -136,6 +133,21 @@
                         "block7"
                     ],
                     "op": "jmp"
+                },
+                {
+                    "label": "block7"
+                },
+                {
+                    "args": [
+                        "j3"
+                    ],
+                    "op": "print"
+                },
+                {
+                    "args": [
+                        "j3"
+                    ],
+                    "op": "ret"
                 }
             ],
             "name": "main"

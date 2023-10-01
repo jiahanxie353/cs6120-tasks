@@ -12,6 +12,7 @@
     j_twt: bool = lt j twenty;
     br j_twt .block5 .block6;
 .block4:
+    print j;
     ret j;
 .block5:
     one: int = const 1;

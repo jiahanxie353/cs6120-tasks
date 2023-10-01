@@ -17,5 +17,6 @@
 .block6:
     jmp .block7;
 .block7:
+    print j;
     ret j;
 }
