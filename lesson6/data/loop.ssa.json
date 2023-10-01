@@ -1,0 +1,104 @@
+{
+    "functions": [
+        {
+            "instrs": [
+                {
+                    "label": "entry"
+                },
+                {
+                    "dest": "i1",
+                    "op": "const",
+                    "type": "int",
+                    "value": 1
+                },
+                {
+                    "labels": [
+                        "loop"
+                    ],
+                    "op": "jmp"
+                },
+                {
+                    "label": "loop"
+                },
+                {
+                    "dest": "max1",
+                    "op": "const",
+                    "type": "int",
+                    "value": 10
+                },
+                {
+                    "args": [
+                        "i2",
+                        "max1"
+                    ],
+                    "dest": "cond1",
+                    "op": "lt",
+                    "type": "bool"
+                },
+                {
+                    "args": [
+                        "cond1"
+                    ],
+                    "labels": [
+                        "body",
+                        "exit"
+                    ],
+                    "op": "br"
+                },
+                {
+                    "label": "body"
+                },
+                {
+                    "args": [
+                        "i2",
+                        "i2"
+                    ],
+                    "dest": "i3",
+                    "op": "add",
+                    "type": "int"
+                },
+                {
+                    "labels": [
+                        "loop"
+                    ],
+                    "op": "jmp"
+                },
+                {
+                    "label": "exit"
+                },
+                {
+                    "args": [
+                        "i2"
+                    ],
+                    "op": "print"
+                },
+                {
+                    "op": "ret"
+                },
+                {
+                    "label": "block5"
+                },
+                {
+                    "args": [
+                        "i1"
+                    ],
+                    "dest": "i2",
+                    "op": "id",
+                    "type": "int"
+                },
+                {
+                    "label": "block6"
+                },
+                {
+                    "args": [
+                        "i3"
+                    ],
+                    "dest": "i2",
+                    "op": "id",
+                    "type": "int"
+                }
+            ],
+            "name": "main"
+        }
+    ]
+}

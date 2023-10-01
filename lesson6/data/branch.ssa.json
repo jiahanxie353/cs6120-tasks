@@ -1,0 +1,95 @@
+{
+    "functions": [
+        {
+            "instrs": [
+                {
+                    "label": "entry"
+                },
+                {
+                    "dest": "a1",
+                    "op": "const",
+                    "type": "int",
+                    "value": 47
+                },
+                {
+                    "args": [
+                        "cond"
+                    ],
+                    "labels": [
+                        "left",
+                        "right"
+                    ],
+                    "op": "br"
+                },
+                {
+                    "label": "left"
+                },
+                {
+                    "args": [
+                        "a1",
+                        "a1"
+                    ],
+                    "dest": "a3",
+                    "op": "add",
+                    "type": "int"
+                },
+                {
+                    "labels": [
+                        "exit"
+                    ],
+                    "op": "jmp"
+                },
+                {
+                    "label": "right"
+                },
+                {
+                    "args": [
+                        "a1",
+                        "a1"
+                    ],
+                    "dest": "a4",
+                    "op": "mul",
+                    "type": "int"
+                },
+                {
+                    "labels": [
+                        "exit"
+                    ],
+                    "op": "jmp"
+                },
+                {
+                    "label": "exit"
+                },
+                {
+                    "args": [
+                        "a2"
+                    ],
+                    "op": "print"
+                },
+                {
+                    "label": "block5"
+                },
+                {
+                    "args": [
+                        "a3"
+                    ],
+                    "dest": "a2",
+                    "op": "id",
+                    "type": "int"
+                },
+                {
+                    "label": "block6"
+                },
+                {
+                    "args": [
+                        "a4"
+                    ],
+                    "dest": "a2",
+                    "op": "id",
+                    "type": "int"
+                }
+            ],
+            "name": "main"
+        }
+    ]
+}

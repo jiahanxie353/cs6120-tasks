@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
         string outputJsonName = string(argv[1]);
         size_t dotPos = outputJsonName.rfind('.');
         if (dotPos != string::npos)
-            outputJsonName.insert(dotPos + 1, "phi-nodes.");
+            outputJsonName.insert(dotPos + 1, "ssa.");
 
         outfile = std::make_unique<std::ofstream>(outputJsonName);
         os_ptr = outfile.get();
