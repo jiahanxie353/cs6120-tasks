@@ -197,6 +197,19 @@ void CFG::insertBtw(shared_ptr<Block> newBlock, shared_ptr<Block> origPred,
 
     newBlock->setLabel("block" + std::to_string(basicBlocks.size() + 1));
     newBlock->insertInstr(new Instr{{"label", newBlock->getLabel()}}, 0);
+    newBlock->insertInstr(
+        new Instr({{"labels", {origSucc->getLabel()}}, {"op", "jmp"}}),
+        newBlock->getInstrs().size());
+
+    if (origPred->getInstrs().back()->contains("op") &&
+        origPred->getInstrs().back()->at("op").get<string>() == "jmp") {
+        assert(origPred->getInstrs().back()->at("labels")[0].get<string>() ==
+               origSucc->getLabel());
+        origPred->removeInstr(origPred->getInstrs().size() - 1);
+    }
+    origPred->insertInstr(
+        new Instr({{"labels", {newBlock->getLabel()}}, {"op", "jmp"}}),
+        origPred->getInstrs().size());
     basicBlocks.push_back(newBlock);
 }
 

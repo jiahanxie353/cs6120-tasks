@@ -51,7 +51,7 @@
                 },
                 {
                     "labels": [
-                        "block7"
+                        "block8"
                     ],
                     "op": "jmp"
                 },
@@ -90,7 +90,7 @@
                 },
                 {
                     "labels": [
-                        "block7"
+                        "block9"
                     ],
                     "op": "jmp"
                 },
@@ -115,6 +115,12 @@
                     "type": "int"
                 },
                 {
+                    "labels": [
+                        "block7"
+                    ],
+                    "op": "jmp"
+                },
+                {
                     "label": "block9"
                 },
                 {
@@ -124,6 +130,12 @@
                     "dest": "j3",
                     "op": "id",
                     "type": "int"
+                },
+                {
+                    "labels": [
+                        "block7"
+                    ],
+                    "op": "jmp"
                 }
             ],
             "name": "main"

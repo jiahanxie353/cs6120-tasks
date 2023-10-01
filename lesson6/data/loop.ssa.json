@@ -13,7 +13,7 @@
                 },
                 {
                     "labels": [
-                        "loop"
+                        "block5"
                     ],
                     "op": "jmp"
                 },
@@ -59,7 +59,7 @@
                 },
                 {
                     "labels": [
-                        "loop"
+                        "block6"
                     ],
                     "op": "jmp"
                 },
@@ -87,6 +87,12 @@
                     "type": "int"
                 },
                 {
+                    "labels": [
+                        "loop"
+                    ],
+                    "op": "jmp"
+                },
+                {
                     "label": "block6"
                 },
                 {
@@ -96,6 +102,12 @@
                     "dest": "i2",
                     "op": "id",
                     "type": "int"
+                },
+                {
+                    "labels": [
+                        "loop"
+                    ],
+                    "op": "jmp"
                 }
             ],
             "name": "main"

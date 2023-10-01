@@ -24,6 +24,12 @@
                     "value": 0
                 },
                 {
+                    "labels": [
+                        "block8"
+                    ],
+                    "op": "jmp"
+                },
+                {
                     "label": "block2"
                 },
                 {
@@ -116,7 +122,7 @@
                 },
                 {
                     "labels": [
-                        "block7"
+                        "block10"
                     ],
                     "op": "jmp"
                 },
@@ -148,7 +154,7 @@
                 },
                 {
                     "labels": [
-                        "block7"
+                        "block11"
                     ],
                     "op": "jmp"
                 },
@@ -157,7 +163,7 @@
                 },
                 {
                     "labels": [
-                        "block2"
+                        "block9"
                     ],
                     "op": "jmp"
                 },
@@ -181,6 +187,12 @@
                     "type": "int"
                 },
                 {
+                    "labels": [
+                        "block2"
+                    ],
+                    "op": "jmp"
+                },
+                {
                     "label": "block9"
                 },
                 {
@@ -198,6 +210,12 @@
                     "dest": "j2",
                     "op": "id",
                     "type": "int"
+                },
+                {
+                    "labels": [
+                        "block2"
+                    ],
+                    "op": "jmp"
                 },
                 {
                     "label": "block10"
@@ -219,6 +237,12 @@
                     "type": "int"
                 },
                 {
+                    "labels": [
+                        "block7"
+                    ],
+                    "op": "jmp"
+                },
+                {
                     "label": "block11"
                 },
                 {
@@ -236,6 +260,12 @@
                     "dest": "j5",
                     "op": "id",
                     "type": "int"
+                },
+                {
+                    "labels": [
+                        "block7"
+                    ],
+                    "op": "jmp"
                 }
             ],
             "name": "main"

@@ -35,7 +35,7 @@
                 },
                 {
                     "labels": [
-                        "exit"
+                        "block5"
                     ],
                     "op": "jmp"
                 },
@@ -53,7 +53,7 @@
                 },
                 {
                     "labels": [
-                        "exit"
+                        "block6"
                     ],
                     "op": "jmp"
                 },
@@ -78,6 +78,12 @@
                     "type": "int"
                 },
                 {
+                    "labels": [
+                        "exit"
+                    ],
+                    "op": "jmp"
+                },
+                {
                     "label": "block6"
                 },
                 {
@@ -87,6 +93,12 @@
                     "dest": "a2",
                     "op": "id",
                     "type": "int"
+                },
+                {
+                    "labels": [
+                        "exit"
+                    ],
+                    "op": "jmp"
                 }
             ],
             "name": "main"
