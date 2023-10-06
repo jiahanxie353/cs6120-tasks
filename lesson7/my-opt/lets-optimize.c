@@ -1,21 +1,25 @@
 #include <stdio.h>
 
 int main() {
-    // Dead Code (this variable is declared but never used)
-    int deadVariable = 100;
+    int a = 0;
+    int b = 1;
 
-    // Constant Folding and Instruction Simplification
-    int a = 10;
-    int b = a + 0; // Simplify to: int b = a;
-    int c = b * 1; // Simplify to: int c = b;
-    int d = 5 * 4; // Constant Fold to: int d = 20;
+    if (a == b) {
+        printf("Integer a equals to b branch!\n");
+    }
+    else {
+        printf("Integer a not equals to b branch!\n");
+    }
 
-    // More Dead Code (the computation is done but the result isn't used)
-    int e = d + c;
+    float c = 3.14;
+    float d = 2.71;
+    
+    if (c == d) {
+        printf("Float c equals to d branch!\n");
+    }
+    else {
+        printf("Float c not equals to d branch!\n");
+    }
 
-    // The real computation
-    int result = a + d;
-
-    printf("The result is: %d\n", result);
     return 0;
 }
