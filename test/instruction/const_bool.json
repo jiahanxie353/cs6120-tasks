@@ -1,0 +1,15 @@
+{
+  "functions": [
+    {
+      "instrs": [
+        {
+          "dest": "a",
+          "op": "const",
+          "type": "bool",
+          "value": true
+        }
+      ],
+      "name": "main"
+    }
+  ]
+}
