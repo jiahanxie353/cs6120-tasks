@@ -56,6 +56,25 @@ private:
   std::string data;
 };
 
+class ArgValue : public Value {
+public:
+  ArgValue(Value *v) : data(v), ownValue(false) {
+    type = v->getTypeSharedPtr();
+  }
+  ~ArgValue() override {
+    if (ownValue)
+      delete data;
+  };
+
+  Value *getValue() const { return data; }
+  Type *getType() const { return data->getType(); }
+  const std::string dump() const override { return data->dump(); }
+
+private:
+  Value *data;
+  bool ownValue;
+};
+
 class IntValue : public ConstValue {
 public:
   IntValue(int d) : ConstValue(new IntType()) { data = d; }

@@ -18,11 +18,12 @@ using json = nlohmann::json;
 // Note: An `Instruction` is a `Value` because it can be used.
 class Instruction : public Value {
 public:
-  Instruction(json *j) { jsonRepr = j; }
-  Instruction(Operator *o, Type *t) : Value(t), op(o) {}
-  virtual ~Instruction() {
-    delete jsonRepr;
+  Instruction(json *j) : Value(), jsonRepr(j), op(nullptr), value(nullptr) {}
+  Instruction(Operator *o, Type *t)
+      : Value(t), jsonRepr(nullptr), op(o), value(nullptr) {}
+  virtual ~Instruction() override {
     delete op;
+    delete value;
   }
 
   Operator *getOperator() const { return op; }
@@ -36,14 +37,23 @@ protected:
   json *jsonRepr;
   Operator *op;
   Value *value;
-  virtual void jsonToInstr(json *) = 0;
+  // Turns an instruction json to `Instruction`
+  void initInstr(json *ij, std::optional<std::vector<ArgValue *>> args) {
+    std::string typeStr = ij->at("type").get<std::string>();
+    type = Type::createType(typeStr);
+
+    customInit(args);
+  }
+  // Customizes parsing `jsonRepr` to additional details. Derived classes will
+  // use their extra attributes as well.
+  virtual void customInit(std::optional<std::vector<ArgValue *>>) = 0;
 };
 
 // A `ConstInstr` is an instruction that produces a literal value.
 // A `ConstInstr`'s `op` field must be the string "const".
 class ConstInstr : public Instruction {
 public:
-  ConstInstr(json *j) : Instruction(j) { jsonToInstr(std::move(jsonRepr)); }
+  ConstInstr(json *j) : Instruction(j) { initInstr(jsonRepr, std::nullopt); }
 
   ConstValue *getValue() const override {
     return static_cast<ConstValue *>(value);
@@ -52,43 +62,30 @@ public:
   PrimType *getType() const override { return getValue()->getType(); }
 
 protected:
-  void jsonToInstr(json *j) override {
-    std::string typeStr = j->at("type").get<std::string>();
-    std::string opStr = j->at("op").get<std::string>();
-
-    if (typeStr == "int") {
-      type = new IntType();
-      int valueInt = j->at("value").get<int>();
-      value = new IntValue(type, valueInt);
-      op = new ConstOp();
-    } else if (typeStr == "bool") {
-      type = new BoolType();
-      bool valueBool = j->at("value").get<bool>();
-      value = new BoolValue(type, valueBool);
-      op = new ConstOp();
-    } else {
-      throw std::runtime_error(
-          "Constant instructions have to be either int or boolean.\n");
-    }
-  }
+  void customInit(std::optional<std::vector<ArgValue *>>) override;
 };
 
 // A `ValueInstr` is an instruction that takes arguments, does some
 // computation, and produces a value. It has "dest" and "type" fields
 class ValueInstr : public Instruction {
 public:
+  ValueInstr(json *j, std::optional<std::vector<ArgValue *>> args)
+      : Instruction(j) {
+    initInstr(jsonRepr, args);
+  }
   // Returns the produced value.
   Value *getValue() const override { return value; }
   Value *getDest() const { return dest; }
-  Type *getType() const override{};
+  Type *getType() const override;
+
+  ~ValueInstr() override { delete dest; }
 
 protected:
-  void jsonToInstr(json *j) override {}
+  void customInit(std::optional<std::vector<ArgValue *>>) override;
 
 private:
   Value *dest;
-  Type *type;
-  std::optional<std::vector<Value *>> arguments;
+  std::optional<std::vector<ArgValue *>> arguments;
 };
 
 // An `EffectInstr` is like a `ValueInstr` but it does not produce a value.
@@ -99,13 +96,13 @@ public:
     return static_cast<EmptyValue *>(value);
   }
   Value *getDest() const { return dest; }
-  Type *getType() const override{};
+  Type *getType() const override;
+  ~EffectInstr() override { delete dest; }
 
 protected:
-  void jsonToInstr(json *j) override {}
+  void customInit(std::optional<std::vector<ArgValue *>>) override;
 
 private:
   Value *dest;
-  Type *type;
-  std::optional<std::vector<Value *>> arguments;
+  std::optional<std::vector<ArgValue *>> arguments;
 };

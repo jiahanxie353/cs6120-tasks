@@ -29,6 +29,7 @@ enum OpCode {
 class Operator {
 public:
   Operator(OpCode op) : oc(op) {}
+  virtual ~Operator() = default;
   virtual const std::string dump() const = 0;
   OpCode getOpcode() const { return oc; }
 
@@ -43,12 +44,12 @@ public:
   const std::string dump() const override { return "const"; }
 };
 
-class BinaryOp : public Operator {
+class BinaryOp : virtual public Operator {
 public:
   virtual Value *compute(Value *operand1, Value *operand2) = 0;
 };
 
-class UnaryOp : public Operator {
+class UnaryOp : virtual public Operator {
 public:
   virtual Value *compute(Value *operand) = 0;
 };
@@ -93,6 +94,14 @@ class OrOp : public BinaryOp {};
 // ===-----------------------------===//
 // Unary Operators
 // ===-----------------------------===//
+
+class IdOp : public UnaryOp {
+public:
+  IdOp() : Operator(Id) {}
+  const std::string dump() const override { return "id"; }
+
+  Value *compute(Value *operand) override { return operand; }
+};
 
 class NotOp : public UnaryOp {};
 
