@@ -1,1 +1,1 @@
-g++ test.cpp ../../../type.cpp ../../../value.cpp ../../../operator.cpp ../../../utils.cpp ../../../instr.cpp -g -o instr_test -Wall
+g++ test.cpp ../../../type.cpp ../../../value.cpp ../../../operator.cpp ../../../utils.cpp ../../../instr.cpp -g -o cm_test -Wall

@@ -162,6 +162,28 @@ void ValueInstr::customInit(std::optional<vector<ArgValue *>> args) {
     throw std::runtime_error("Other value instructions not implemented yet!\n");
 }
 
+void EffectInstr::customInit(std::optional<vector<ArgValue *>> args) {
+  value = new EmptyValue();
+  string opStr = jsonRepr->at("op").get<string>();
+  if (opStr == "print") {
+    // args can be any size
+    if (args.has_value())
+      arguments = args;
+
+    // we don't need to create a new type bc `Instruction` initialization will
+    // handle it and it's always `VoidType`
+
+    op = new PrintOp();
+
+    if (arguments.has_value()) {
+      arguments = args;
+      for (const auto &arg : arguments.value())
+        dynamic_cast<PrintOp *>(op)->execute(arg);
+    } else
+      std::cout << std::endl;
+  }
+}
+
 Type *ValueInstr::getType() const {
   switch (op->getOpcode()) {
   case Id:

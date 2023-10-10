@@ -21,6 +21,7 @@ protected:
 
 // A wrapper around empty values. An `EmptyValue` has type `VoidType`.
 class EmptyValue : public Value {
+public:
   EmptyValue() : Value(new VoidType()) {}
 
   VoidType *getType() const override {

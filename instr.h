@@ -39,9 +39,11 @@ protected:
   Value *value;
   // Turns an instruction json to `Instruction`
   void initInstr(json *ij, std::optional<std::vector<ArgValue *>> args) {
-    std::string typeStr = ij->at("type").get<std::string>();
-    type = Type::createType(typeStr);
-
+    if (ij->contains("type")) {
+      std::string typeStr = ij->at("type").get<std::string>();
+      type = Type::createType(typeStr);
+    } else
+      type = std::make_shared<VoidType>();
     customInit(args);
   }
   // Customizes parsing `jsonRepr` to additional details. Derived classes will
@@ -91,18 +93,23 @@ private:
 // An `EffectInstr` is like a `ValueInstr` but it does not produce a value.
 class EffectInstr : public Instruction {
 public:
+  EffectInstr(json *j, std::optional<std::vector<ArgValue *>> args)
+      : Instruction(j) {
+    initInstr(jsonRepr, args);
+  }
   // Returns an empty value.
   EmptyValue *getValue() const override {
     return static_cast<EmptyValue *>(value);
   }
-  Value *getDest() const { return dest; }
-  Type *getType() const override;
-  ~EffectInstr() override { delete dest; }
+
+  Type *getType() const override {
+    if (jsonRepr->at("op") == "print")
+      return dynamic_cast<VoidType *>(type.get());
+  }
 
 protected:
   void customInit(std::optional<std::vector<ArgValue *>>) override;
 
 private:
-  Value *dest;
   std::optional<std::vector<ArgValue *>> arguments;
 };

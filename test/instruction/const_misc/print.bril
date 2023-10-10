@@ -1,0 +1,7 @@
+@main {
+  v0: bool = const true;
+  v1: int = const 42;
+  print v0;
+  print v1;
+  print;
+}
