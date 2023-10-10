@@ -1,0 +1,7 @@
+@main {
+  v0: bool = const true;
+  v1: bool = const false;
+  v2: bool = and v0 v1;
+  v3: bool = or v0 v1;
+  v4: bool = not v1;
+}

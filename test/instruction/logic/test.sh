@@ -1,0 +1,1 @@
+g++ test.cpp ../../../type.cpp ../../../value.cpp ../../../operator.cpp ../../../utils.cpp ../../../instr.cpp -g -o logic_test -Wall

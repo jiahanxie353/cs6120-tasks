@@ -1,0 +1,7 @@
+@main {
+  v0: int = const 1;
+  v1: int = const 2;
+  v2: bool = eq v0 v1;
+  v3: bool = lt v0 v1;
+  v4: bool = ge v0 v1;
+}

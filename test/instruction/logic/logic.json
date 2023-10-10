@@ -1,0 +1,47 @@
+{
+  "functions": [
+    {
+      "instrs": [
+        {
+          "dest": "v0",
+          "op": "const",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "dest": "v1",
+          "op": "const",
+          "type": "bool",
+          "value": false
+        },
+        {
+          "args": [
+            "v0",
+            "v1"
+          ],
+          "dest": "v2",
+          "op": "and",
+          "type": "bool"
+        },
+        {
+          "args": [
+            "v0",
+            "v1"
+          ],
+          "dest": "v3",
+          "op": "or",
+          "type": "bool"
+        },
+        {
+          "args": [
+            "v1"
+          ],
+          "dest": "v4",
+          "op": "not",
+          "type": "bool"
+        }
+      ],
+      "name": "main"
+    }
+  ]
+}
