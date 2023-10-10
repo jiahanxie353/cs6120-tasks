@@ -5,6 +5,8 @@
 using std::string;
 using std::vector;
 
+std::set<string> ArithOpStr = {"add", "mul", "sub", "div"};
+
 void ConstInstr::customInit(std::optional<vector<ArgValue *>> args) {
   string typeStr = jsonRepr->at("type").get<string>();
   assert(typeStr == "int" ||
@@ -44,29 +46,43 @@ void ValueInstr::customInit(std::optional<vector<ArgValue *>> args) {
     arguments = args;
 
     dest = new LitValue(new LitType(), jsonRepr->at("dest").get<string>());
-  } else if (opStr == "add") {
-    string typeStr = jsonRepr->at("type").get<string>();
-    assert(typeStr == "int" && "Add instructions have to assign int values.\n");
+  } else if (ArithOpStr.find(opStr) != ArithOpStr.end()) {
+    dest = new LitValue(new LitType(), jsonRepr->at("dest").get<string>());
 
     auto jsonArgs = jsonRepr->at("args").get<vector<string>>();
     assert(jsonArgs.size() == 2 && args.value().size() == 2 &&
-           "Add instructions have two arguments.\n");
+           "Arithmetic operation instructions have two arguments.\n");
 
+    arguments = args;
     ArgValue *operand1 = args.value()[0];
     ArgValue *operand2 = args.value()[1];
 
-    arguments = args;
+    string typeStr = jsonRepr->at("type").get<string>();
+    assert(typeStr == "int" &&
+           "Arithmetic instructions have to assign int values.\n");
 
     assert(operand1->getType()->dump() == "int" &&
-           operand2->getType()->dump() == "int");
+           operand2->getType()->dump() == "int" &&
+           "Both operands types have to be int.\n");
     type = operand1->getTypeSharedPtr();
-
-    op = new AddOp();
     IntValue *intValue1 = dynamic_cast<IntValue *>(operand1->getValue());
     IntValue *intValue2 = dynamic_cast<IntValue *>(operand2->getValue());
-    value = dynamic_cast<AddOp *>(op)->compute(intValue1, intValue2);
 
-    dest = new LitValue(new LitType(), jsonRepr->at("dest").get<string>());
+    if (opStr == "add") {
+      op = new AddOp();
+      value = dynamic_cast<AddOp *>(op)->compute(intValue1, intValue2);
+    } else if (opStr == "mul") {
+      op = new MulOp();
+      value = dynamic_cast<MulOp *>(op)->compute(intValue1, intValue2);
+    } else if (opStr == "sub") {
+      op = new SubOp();
+      value = dynamic_cast<SubOp *>(op)->compute(intValue1, intValue2);
+    } else if (opStr == "div") {
+      op = new DivOp();
+      value = dynamic_cast<DivOp *>(op)->compute(intValue1, intValue2);
+    } else {
+      throw std::runtime_error("Invalid arith operation: " + opStr + "!\n");
+    }
   } else
     throw std::runtime_error("Other value instructions not implemented yet!\n");
 }

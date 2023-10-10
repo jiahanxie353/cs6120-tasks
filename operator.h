@@ -85,11 +85,41 @@ public:
   const std::string dump() const override { return "add"; }
 };
 
-class MulOp : public BinaryOp {};
+class MulOp : public BinaryOp {
+public:
+  MulOp() : Operator(Mul) {}
+  IntValue *compute(IntValue *operand1, IntValue *operand2) override {
+    int addResult = operand1->getData() * operand2->getData();
 
-class SubOp : public BinaryOp {};
+    return new IntValue(addResult);
+  }
 
-class DivOp : public BinaryOp {};
+  const std::string dump() const override { return "multiply"; }
+};
+
+class SubOp : public BinaryOp {
+public:
+  SubOp() : Operator(Sub) {}
+  IntValue *compute(IntValue *operand1, IntValue *operand2) override {
+    int addResult = operand1->getData() - operand2->getData();
+
+    return new IntValue(addResult);
+  }
+
+  const std::string dump() const override { return "subtract"; }
+};
+
+class DivOp : public BinaryOp {
+public:
+  DivOp() : Operator(Div) {}
+  IntValue *compute(IntValue *operand1, IntValue *operand2) override {
+    int addResult = operand1->getData() / operand2->getData();
+
+    return new IntValue(addResult);
+  }
+
+  const std::string dump() const override { return "divide"; }
+};
 
 class EqOp : public BinaryOp {};
 

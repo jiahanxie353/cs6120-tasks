@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <iostream>
 #include <map>
+#include <set>
 
 #include "../../../instr.h"
 #include "../../../utils.h"
@@ -8,6 +9,8 @@
 using std::map;
 using std::string;
 using std::vector;
+
+std::set<string> ArithOps = {"add", "mul", "sub", "div"};
 
 int main(int argc, char *argv[]) {
   json constJson = readJson(argv[1]);
@@ -21,7 +24,7 @@ int main(int argc, char *argv[]) {
       if (op == "const") {
         allInstrMap[brilInstr.at("dest").get<string>()] =
             new ConstInstr(&brilInstr);
-      } else if (op == "add" || op == "id") {
+      } else if (ArithOps.find(op) != ArithOps.end() || op == "id") {
         auto args = brilInstr.at("args").get<vector<string>>();
         auto dest = brilInstr.at("dest").get<string>();
 
