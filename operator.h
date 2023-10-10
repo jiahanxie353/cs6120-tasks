@@ -1,6 +1,8 @@
 #pragma once
 
 #include "value.h"
+#include <cassert>
+#include <iostream>
 
 enum OpCode {
   Const,
@@ -46,7 +48,7 @@ public:
 
 class BinaryOp : virtual public Operator {
 public:
-  virtual Value *compute(Value *operand1, Value *operand2) = 0;
+  virtual IntValue *compute(IntValue *operand1, IntValue *operand2) = 0;
 };
 
 class UnaryOp : virtual public Operator {
@@ -71,7 +73,17 @@ class MemOp : public Operator {};
 // Binary Operators
 // ===-----------------------------===//
 
-class AddOp : public BinaryOp {};
+class AddOp : public BinaryOp {
+public:
+  AddOp() : Operator(Add) {}
+  IntValue *compute(IntValue *operand1, IntValue *operand2) override {
+    int addResult = operand1->getData() + operand2->getData();
+
+    return new IntValue(addResult);
+  }
+
+  const std::string dump() const override { return "add"; }
+};
 
 class MulOp : public BinaryOp {};
 
