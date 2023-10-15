@@ -28,63 +28,61 @@ using Instr = json;
 using namespace bril;
 
 class Block {
-  public:
-    Block(string label) : label(label){};
-    Block(vector<Instr *> instrs) : instructions(instrs){};
-    // returns the label of this basic block
-    string getLabel() const;
-    // returns all instructions of this basic block
-    vector<Instr *> getInstrs() const;
-    // returns the predecessors of this basic block
-    vector<shared_ptr<Block>> getPredecessors() const;
-    // returns the successors of this basic block
-    vector<shared_ptr<Block>> getSuccessors() const;
-    bool hasField(string, string) const;
-    void removeInstr(int pos);
+public:
+  Block(string label) : label(label){};
+  Block(vector<Instr *> instrs) : instructions(instrs){};
+  // returns the label of this basic block
+  string getLabel() const;
+  // returns all instructions of this basic block
+  vector<Instr *> getInstrs() const;
+  // returns the predecessors of this basic block
+  vector<shared_ptr<Block>> getPredecessors() const;
+  // returns the successors of this basic block
+  vector<shared_ptr<Block>> getSuccessors() const;
+  bool hasField(string, string) const;
+  void removeInstr(int pos);
 
-    ~Block();
-
-    template <class T> set<T> getDefined() const {
-        if (std::is_same<T, Var>::value) {
-            return this->definedVars;
-        }
+  template <class T> set<T> getDefined() const {
+    if (std::is_same<T, Var>::value) {
+      return this->definedVars;
     }
+  }
 
-    template <class T> set<T> computeKilled(const set<T> &inputs) const {
-        if (std::is_same<T, Var>::value) {
-            set<Var> currAvailVars = inputs;
-            set<Var> killedVars;
-            for (const auto instr : this->getInstrs()) {
-                if (instr->contains("dest")) {
-                    Var destVar = instr->at("dest");
-                    if (currAvailVars.find(destVar) != currAvailVars.end())
-                        killedVars.insert(destVar);
-                    else
-                        currAvailVars.insert(destVar);
-                }
-            }
-            return killedVars;
+  template <class T> set<T> computeKilled(const set<T> &inputs) const {
+    if (std::is_same<T, Var>::value) {
+      set<Var> currAvailVars = inputs;
+      set<Var> killedVars;
+      for (const auto instr : this->getInstrs()) {
+        if (instr->contains("dest")) {
+          Var destVar = instr->at("dest");
+          if (currAvailVars.find(destVar) != currAvailVars.end())
+            killedVars.insert(destVar);
+          else
+            currAvailVars.insert(destVar);
         }
+      }
+      return killedVars;
     }
+  }
 
-    void insertInstr(Instr *, int);
+  void insertInstr(Instr *, int);
 
-  private:
-    friend class CFG;
+private:
+  friend class CFG;
 
-    void setLabel(const string);
+  void setLabel(const string);
 
-    void computeDefVars();
+  void computeDefVars();
 
-    void addPredecessor(shared_ptr<Block>);
-    void addSuccessor(shared_ptr<Block>);
-    void removePredecessor(shared_ptr<Block>);
-    void removeSuccessor(shared_ptr<Block>);
+  void addPredecessor(shared_ptr<Block>);
+  void addSuccessor(shared_ptr<Block>);
+  void removePredecessor(shared_ptr<Block>);
+  void removeSuccessor(shared_ptr<Block>);
 
-    string label;
-    vector<Instr *> instructions;
-    vector<shared_ptr<Block>> predecessors;
-    vector<shared_ptr<Block>> successors;
+  string label;
+  vector<Instr *> instructions;
+  vector<shared_ptr<Block>> predecessors;
+  vector<shared_ptr<Block>> successors;
 
-    set<Var> definedVars;
+  set<Var> definedVars;
 };

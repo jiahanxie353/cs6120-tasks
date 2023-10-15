@@ -1,12 +1,12 @@
 #include "../../cfg.hpp"
-#include "../../utils.hpp"
+#include "../../utils.h"
 
 int main(int argc, char *argv[]) {
-    json brilProg = readJson(argv[1]);
-    for (auto &brilFcn : brilProg.at("functions")) {
-        CFG cfg(brilFcn);
-        cfg.visualize();
-    }
+  json brilProg = readJson(argv[1]);
+  for (auto &brilFcn : brilProg.at("functions")) {
+    CFG cfg(brilFcn);
+    cfg.visualize();
+  }
 
-    return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 }
