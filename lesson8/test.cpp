@@ -12,15 +12,9 @@ int main(int argc, char *argv[]) {
   for (auto &brilFcn : brilProg.at("functions")) {
     CFG cfg = CFG(brilFcn);
 
-    entryBlock = cfg.getEntry();
+    set<pair<string, string>> backEdges = findBackEdges(cfg);
 
-    map<string, bool> visited;
-    for (const auto b : cfg.getBasicBlocks())
-      visited[b->getLabel()] = false;
-
-    set<pair<string, string>> allEdges = findAllEdges(entryBlock, visited);
-
-    for (const auto e : allEdges) {
+    for (const auto e : backEdges) {
       std::cout << e.first << ", " << e.second << std::endl;
     }
   }

@@ -10,6 +10,7 @@
   br b1 .left .right;
 .left:
   print i1;
+  jmp .then;
 .right:
   i4: int = const 3;
   jmp .then;

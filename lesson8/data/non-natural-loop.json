@@ -70,6 +70,12 @@
           "op": "print"
         },
         {
+          "labels": [
+            "then"
+          ],
+          "op": "jmp"
+        },
+        {
           "label": "right"
         },
         {
