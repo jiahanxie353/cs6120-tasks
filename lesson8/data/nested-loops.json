@@ -1,0 +1,193 @@
+{
+  "functions": [
+    {
+      "instrs": [
+        {
+          "label": "entry"
+        },
+        {
+          "dest": "a",
+          "op": "const",
+          "type": "int",
+          "value": 42
+        },
+        {
+          "label": "loop_entry"
+        },
+        {
+          "args": [
+            "a",
+            "a"
+          ],
+          "dest": "b",
+          "op": "add",
+          "type": "int"
+        },
+        {
+          "args": [
+            "a",
+            "b"
+          ],
+          "dest": "out_loop_cond",
+          "op": "lt",
+          "type": "bool"
+        },
+        {
+          "args": [
+            "out_loop_cond"
+          ],
+          "labels": [
+            "left",
+            "right"
+          ],
+          "op": "br"
+        },
+        {
+          "label": "left"
+        },
+        {
+          "dest": "c",
+          "op": "const",
+          "type": "int",
+          "value": 47
+        },
+        {
+          "labels": [
+            "out_loop_exit"
+          ],
+          "op": "jmp"
+        },
+        {
+          "label": "right"
+        },
+        {
+          "args": [
+            "b",
+            "a"
+          ],
+          "dest": "d",
+          "op": "sub",
+          "type": "int"
+        },
+        {
+          "args": [
+            "d",
+            "a"
+          ],
+          "dest": "in_loop_cond",
+          "op": "gt",
+          "type": "bool"
+        },
+        {
+          "args": [
+            "in_loop_cond"
+          ],
+          "labels": [
+            "in_loop_mid",
+            "no_in_loop"
+          ],
+          "op": "br"
+        },
+        {
+          "label": "in_loop_mid"
+        },
+        {
+          "dest": "e",
+          "op": "const",
+          "type": "int",
+          "value": 54
+        },
+        {
+          "labels": [
+            "in_loop_end"
+          ],
+          "op": "jmp"
+        },
+        {
+          "label": "in_loop_end"
+        },
+        {
+          "args": [
+            "a",
+            "a"
+          ],
+          "dest": "f",
+          "op": "mul",
+          "type": "int"
+        },
+        {
+          "args": [
+            "f",
+            "e"
+          ],
+          "dest": "in_loop_back",
+          "op": "eq",
+          "type": "bool"
+        },
+        {
+          "args": [
+            "in_loop_back"
+          ],
+          "labels": [
+            "no_in_loop",
+            "right"
+          ],
+          "op": "br"
+        },
+        {
+          "label": "no_in_loop"
+        },
+        {
+          "args": [
+            "a"
+          ],
+          "op": "print"
+        },
+        {
+          "labels": [
+            "out_loop_exit"
+          ],
+          "op": "jmp"
+        },
+        {
+          "label": "out_loop_exit"
+        },
+        {
+          "args": [
+            "c"
+          ],
+          "op": "print"
+        },
+        {
+          "args": [
+            "a",
+            "b"
+          ],
+          "dest": "exit_cond",
+          "op": "eq",
+          "type": "bool"
+        },
+        {
+          "args": [
+            "exit_cond"
+          ],
+          "labels": [
+            "loop_entry",
+            "exit"
+          ],
+          "op": "br"
+        },
+        {
+          "label": "exit"
+        },
+        {
+          "args": [
+            "a"
+          ],
+          "op": "print"
+        }
+      ],
+      "name": "main"
+    }
+  ]
+}

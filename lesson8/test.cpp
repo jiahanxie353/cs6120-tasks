@@ -12,10 +12,13 @@ int main(int argc, char *argv[]) {
   for (auto &brilFcn : brilProg.at("functions")) {
     CFG cfg = CFG(brilFcn);
 
-    set<pair<string, string>> backEdges = findBackEdges(cfg);
+    std::set<std::set<std::string>> allCycles = findCycles(cfg);
 
-    for (const auto e : backEdges) {
-      std::cout << e.first << ", " << e.second << std::endl;
+    for (const auto cycle : allCycles) {
+      std::cout << "A loop: \n";
+      for (const auto node : cycle) {
+        std::cout << node << std::endl;
+      }
     }
   }
 }

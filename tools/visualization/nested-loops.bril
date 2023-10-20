@@ -1,0 +1,31 @@
+@main() {
+.entry:
+    a: int = const 42;
+.loop_entry:
+    b: int = add a a;
+    out_loop_cond: bool = lt a b;
+    br out_loop_cond .left .right;
+.left:
+    c: int = const 47;
+    jmp .out_loop_exit;
+.right:
+    d: int = sub b a;
+    in_loop_cond: bool = gt d a;
+    br in_loop_cond .in_loop_mid .no_in_loop;
+.in_loop_mid:
+    e: int = const 54;
+    jmp .in_loop_end;
+.in_loop_end:
+    f: int = mul a a;
+    in_loop_back: bool = eq f e;
+    br in_loop_back .no_in_loop .right;
+.no_in_loop:
+    print a;
+    jmp .out_loop_exit;
+.out_loop_exit:
+    print c;
+    exit_cond: bool = eq a b;
+    br exit_cond .loop_entry .exit;
+.exit:
+    print a;
+}
