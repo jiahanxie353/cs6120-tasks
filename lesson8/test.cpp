@@ -12,10 +12,10 @@ int main(int argc, char *argv[]) {
   for (auto &brilFcn : brilProg.at("functions")) {
     CFG cfg = CFG(brilFcn);
 
-    std::set<std::set<std::string>> allCycles = findCycles(cfg);
+    std::set<std::set<std::string>> allNatLoops = findNatLoops(cfg);
 
-    for (const auto cycle : allCycles) {
-      std::cout << "A loop: \n";
+    for (const auto cycle : allNatLoops) {
+      std::cout << "A natural loop: \n";
       for (const auto node : cycle) {
         std::cout << node << std::endl;
       }

@@ -1,0 +1,24 @@
+@main {
+.entry:
+  i0: int = const 0;
+  i1: int = const 1;
+  i2: int = const 2;
+  i3: int = const 2;
+.loop:
+  b1: bool = lt i2 i0;
+  i2: int = sub i3 i1;
+  br b1 .left .right;
+.left:
+  print i1;
+  jmp .end;
+.right:
+  print i2;
+  jmp .end;
+.end:
+  i4: int = const 5;
+  b2: bool = lt i4 i0;
+  print i4;
+  br b2 .loop .exit;
+.exit:
+  print i0;
+}

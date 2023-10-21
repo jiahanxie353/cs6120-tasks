@@ -1,0 +1,24 @@
+@main {
+.b1:
+  i0: int = const 0;
+  i1: int = const 1;
+  i2: int = const 2;
+  i3: int = const 2;
+.b2:
+  cond1: bool = lt i2 i0;
+  i2: int = sub i3 i1;
+  br cond1 .b2 .b3;
+.b3:
+  print i1;
+.b4:
+  i4: int = mul i1 i1;
+  cond2: bool = eq i3 i4;
+  br cond2 .b3 .b5;
+.b5:
+  i5: int = const 5;
+  cond2: bool = lt i5 i2;
+  print i5;
+  br cond3 .b2 .exit;
+.exit:
+  print i0;
+}

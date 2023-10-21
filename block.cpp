@@ -44,9 +44,11 @@ void Block::addSuccessor(shared_ptr<Block> block) {
 }
 
 void Block::removePredecessor(shared_ptr<Block> block) {
-  for (auto it = predecessors.begin(); it != predecessors.end(); ++it) {
+  for (auto it = predecessors.begin(); it != predecessors.end();) {
     if ((*it)->getLabel() == block->getLabel()) {
-      predecessors.erase(it);
+      it = predecessors.erase(it);
+    } else {
+      ++it;
     }
   }
 }

@@ -1,0 +1,150 @@
+{
+  "functions": [
+    {
+      "instrs": [
+        {
+          "label": "b1"
+        },
+        {
+          "dest": "i0",
+          "op": "const",
+          "type": "int",
+          "value": 0
+        },
+        {
+          "dest": "i1",
+          "op": "const",
+          "type": "int",
+          "value": 1
+        },
+        {
+          "dest": "i2",
+          "op": "const",
+          "type": "int",
+          "value": 2
+        },
+        {
+          "dest": "i3",
+          "op": "const",
+          "type": "int",
+          "value": 2
+        },
+        {
+          "label": "b2"
+        },
+        {
+          "args": [
+            "i2",
+            "i0"
+          ],
+          "dest": "cond1",
+          "op": "lt",
+          "type": "bool"
+        },
+        {
+          "args": [
+            "i3",
+            "i1"
+          ],
+          "dest": "i2",
+          "op": "sub",
+          "type": "int"
+        },
+        {
+          "args": [
+            "cond1"
+          ],
+          "labels": [
+            "b2",
+            "b3"
+          ],
+          "op": "br"
+        },
+        {
+          "label": "b3"
+        },
+        {
+          "args": [
+            "i1"
+          ],
+          "op": "print"
+        },
+        {
+          "label": "b4"
+        },
+        {
+          "args": [
+            "i1",
+            "i1"
+          ],
+          "dest": "i4",
+          "op": "mul",
+          "type": "int"
+        },
+        {
+          "args": [
+            "i3",
+            "i4"
+          ],
+          "dest": "cond2",
+          "op": "eq",
+          "type": "bool"
+        },
+        {
+          "args": [
+            "cond2"
+          ],
+          "labels": [
+            "b3",
+            "b5"
+          ],
+          "op": "br"
+        },
+        {
+          "label": "b5"
+        },
+        {
+          "dest": "i5",
+          "op": "const",
+          "type": "int",
+          "value": 5
+        },
+        {
+          "args": [
+            "i5",
+            "i2"
+          ],
+          "dest": "cond2",
+          "op": "lt",
+          "type": "bool"
+        },
+        {
+          "args": [
+            "i5"
+          ],
+          "op": "print"
+        },
+        {
+          "args": [
+            "cond3"
+          ],
+          "labels": [
+            "b2",
+            "exit"
+          ],
+          "op": "br"
+        },
+        {
+          "label": "exit"
+        },
+        {
+          "args": [
+            "i0"
+          ],
+          "op": "print"
+        }
+      ],
+      "name": "main"
+    }
+  ]
+}

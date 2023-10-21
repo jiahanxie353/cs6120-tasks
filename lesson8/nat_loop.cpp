@@ -105,21 +105,71 @@ set<set<string>> findCycles(CFG &cfg) {
   return res;
 }
 
+bool allDominated(CFG &cfg, vector<shared_ptr<Block>> blocks,
+                  string dominator) {
+  bool res = true;
+  set<string> dominatees = cfg.getDominatees(dominator);
+  for (const auto b : blocks) {
+    if (dominatees.find(b->getLabel()) == dominatees.end()) {
+      res = false;
+      break;
+    }
+  }
+  return res;
+}
+
+set<string> findNatLoopsUtil(CFG &cfg, string loopHead,
+                             shared_ptr<Block> currBlock,
+                             map<string, bool> visited) {
+  set<string> res;
+  if (currBlock->getLabel() == loopHead) {
+    {
+      for (const auto [k, v] : visited) {
+        if (v)
+          res.insert(k);
+      }
+    }
+    return res;
+  }
+
+  visited[currBlock->getLabel()] = true;
+
+  if (allDominated(cfg, currBlock->getPredecessors(), loopHead)) {
+    for (auto pred : currBlock->getPredecessors()) {
+      res = getUnion(res, findNatLoopsUtil(cfg, loopHead, pred, visited));
+    }
+  } else {
+
+    return {};
+  }
+
+  visited[currBlock->getLabel()] = false;
+
+  return res;
+}
+
 set<set<string>> findNatLoops(CFG &cfg) {
   auto backEdges = findBackEdges(cfg);
 
-  auto allCycles = findCycles(cfg);
+  set<set<string>> res;
 
-  for (const auto &cycle : allCycles) {
-    for (const auto &backEdge : backEdges) {
-      string tail = backEdge.first;
-      string head = backEdge.second;
-      if (cycle.find(tail) != cycle.end() && cycle.find(head) != cycle.end()) {
-        std::cout << "Both the tail and the head are in the cycle/loop! This "
-                     "is potentially a natural loop. And we should eliminate "
-                     "it if any of the node, except `head`, has a predecessor "
-                     "that is outside this cycle.\n";
-      }
+  for (const auto &backEdge : backEdges) {
+    string tail = backEdge.first;
+    string head = backEdge.second;
+
+    map<string, bool> visited;
+    for (const auto b : cfg.getBasicBlocks())
+      visited[b->getLabel()] = false;
+    visited[tail] = true;
+
+    set<string> currRes =
+        findNatLoopsUtil(cfg, head, cfg.getBlock(tail), visited);
+    if (currRes.size() > 0) {
+      currRes.insert(tail);
+      currRes.insert(head);
     }
+    res.insert(currRes);
   }
+
+  return res;
 }
