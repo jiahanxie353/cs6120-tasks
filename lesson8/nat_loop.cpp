@@ -136,10 +136,11 @@ set<string> findNatLoopsUtil(CFG &cfg, string loopHead,
 
   if (allDominated(cfg, currBlock->getPredecessors(), loopHead)) {
     for (auto pred : currBlock->getPredecessors()) {
+      if (visited[pred->getLabel()])
+        break;
       res = getUnion(res, findNatLoopsUtil(cfg, loopHead, pred, visited));
     }
   } else {
-
     return {};
   }
 
