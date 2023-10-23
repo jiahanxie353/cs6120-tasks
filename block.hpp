@@ -43,16 +43,28 @@ public:
   void removeInstr(int pos);
 
   template <class T> set<T> getDefined() const {
-    if (std::is_same<T, Var>::value) {
-      return this->definedVars;
+    if constexpr (std::is_same<T, string>::value) {
+      set<string> res;
+      for (const auto instr : getInstrs()) {
+        if (instr->contains("dest"))
+          res.insert(instr->at("dest").get<string>());
+      }
+      return res;
+    } else if constexpr (std::is_same<T, Instr *>::value) {
+      set<Instr *> res;
+      for (const auto instr : getInstrs()) {
+        if (instr->contains("dest"))
+          res.insert(instr);
+      }
+      return res;
     }
   }
 
   template <class T> set<T> computeKilled(const set<T> &inputs) const {
-    if (std::is_same<T, Var>::value) {
+    if constexpr (std::is_same<T, Var>::value) {
       set<Var> currAvailVars = inputs;
       set<Var> killedVars;
-      for (const auto instr : this->getInstrs()) {
+      for (const auto instr : getInstrs()) {
         if (instr->contains("dest")) {
           Var destVar = instr->at("dest");
           if (currAvailVars.find(destVar) != currAvailVars.end())
@@ -62,6 +74,25 @@ public:
         }
       }
       return killedVars;
+    } else if (std::is_same<T, Instr *>::value) {
+      set<Instr *> currAvailDefs = inputs;
+      set<Instr *> killedDefs;
+      for (const auto instr : getInstrs()) {
+        if (instr->contains("dest")) {
+          string destVar = instr->at("dest").get<string>();
+          for (const auto availDef : currAvailDefs) {
+            if (!(availDef->contains("dest"))) {
+              assert(availDef->contains("name"));
+              if (availDef->at("name").get<string>() == destVar)
+                killedDefs.insert(availDef);
+            } else if (availDef->at("dest").get<string>() == destVar)
+              killedDefs.insert(availDef);
+            else
+              currAvailDefs.insert(instr);
+          }
+        }
+      }
+      return killedDefs;
     }
   }
 
