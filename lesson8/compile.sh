@@ -1,1 +1,1 @@
-g++ test.cpp nat_loop.cpp ../block.cpp ../cfg.cpp ../utils.cpp -g -o test
+g++ test.cpp nat_loop.cpp licm.cpp ../block.cpp ../cfg.cpp ../utils.cpp -g -o test

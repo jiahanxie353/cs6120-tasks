@@ -67,9 +67,6 @@ public:
 
   void insertInstr(Instr *, int);
 
-private:
-  friend class CFG;
-
   void setLabel(const string);
 
   void computeDefVars();
@@ -78,6 +75,9 @@ private:
   void addSuccessor(shared_ptr<Block>);
   void removePredecessor(shared_ptr<Block>);
   void removeSuccessor(shared_ptr<Block>);
+
+private:
+  friend class CFG;
 
   string label;
   vector<Instr *> instructions;

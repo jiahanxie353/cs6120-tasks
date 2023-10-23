@@ -149,10 +149,10 @@ set<string> findNatLoopsUtil(CFG &cfg, string loopHead,
   return res;
 }
 
-set<set<string>> findNatLoops(CFG &cfg) {
+set<pair<string, set<string>>> findNatLoops(CFG &cfg) {
   auto backEdges = findBackEdges(cfg);
 
-  set<set<string>> res;
+  set<pair<string, set<string>>> res;
 
   for (const auto &backEdge : backEdges) {
     string tail = backEdge.first;
@@ -169,7 +169,7 @@ set<set<string>> findNatLoops(CFG &cfg) {
       currRes.insert(tail);
       currRes.insert(head);
     }
-    res.insert(currRes);
+    res.insert(std::make_pair(head, currRes));
   }
 
   return res;

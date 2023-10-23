@@ -1,3 +1,4 @@
+#include "licm.h"
 #include "nat_loop.h"
 
 using std::map;
@@ -12,12 +13,27 @@ int main(int argc, char *argv[]) {
   for (auto &brilFcn : brilProg.at("functions")) {
     CFG cfg = CFG(brilFcn);
 
-    std::set<std::set<std::string>> allNatLoops = findNatLoops(cfg);
+    std::set<std::pair<std::string, std::set<std::string>>> allNatLoops =
+        findNatLoops(cfg);
 
-    for (const auto cycle : allNatLoops) {
-      std::cout << "A natural loop: \n";
-      for (const auto node : cycle) {
+    for (const auto entryLoopPair : allNatLoops) {
+      std::cout << "The entry of the current loop is: " << entryLoopPair.first
+                << std::endl;
+      std::cout << "The corresponding natural loop is: \n";
+      for (const auto node : entryLoopPair.second) {
         std::cout << node << std::endl;
+      }
+      insertPreheader(cfg, entryLoopPair);
+
+      for (const auto b : cfg.getBasicBlocks()) {
+        std::cout << b->getLabel() << "'s predecessors are: \n";
+        for (const auto p : b->getPredecessors()) {
+          std::cout << p->getLabel() << std::endl;
+        }
+        std::cout << b->getLabel() << "'s successors are: \n";
+        for (const auto s : b->getSuccessors()) {
+          std::cout << s->getLabel() << std::endl;
+        }
       }
     }
   }
