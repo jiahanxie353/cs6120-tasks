@@ -1,0 +1,25 @@
+@main {
+.entry:
+  i0: int = const 0;
+  i1: int = const 1;
+  i2: int = const 2;
+.loop:
+  i3: int = const 3;
+  cond1: bool = eq i1 i3;
+  br cond1 .left .right;
+.left:
+  b1: bool = lt i2 i0;
+  i2: int = sub i3 i1;
+  br b1 .loop .end;
+.right:
+  i4: int = const 5;
+  b2: bool = lt i4 i0;
+  print i4;
+  br b2 .loop .end;
+.end:
+  i5: int = add i0 i1;
+  cond2: bool = eq i1 i2;
+  br cond2 .exit .loop;
+.exit:
+  print i0;
+}

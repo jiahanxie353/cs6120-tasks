@@ -41,6 +41,7 @@ public:
   vector<shared_ptr<Block>> getSuccessors() const;
   bool hasField(string, string) const;
   void removeInstr(int pos);
+  void removeInstr(Instr *instr);
 
   template <class T> set<T> getDefined() const {
     if constexpr (std::is_same<T, string>::value) {

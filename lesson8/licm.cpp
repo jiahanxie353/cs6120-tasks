@@ -20,7 +20,7 @@ string genFreshPreHeaderName(CFG &cfg) {
   return "preHeader" + std::to_string(currMax);
 }
 
-void insertPreheader(CFG &cfg, pair<string, set<string>> natLoop) {
+shared_ptr<Block> insertPreheader(CFG &cfg, pair<string, set<string>> natLoop) {
   string loopHeader = natLoop.first;
 
   auto headerBlock = cfg.getBlock(loopHeader);
@@ -32,15 +32,19 @@ void insertPreheader(CFG &cfg, pair<string, set<string>> natLoop) {
   preHeader->addSuccessor(headerBlock);
 
   for (auto &pred : headerBlock->getPredecessors()) {
-    preHeader->addPredecessor(pred);
-    pred->addSuccessor(preHeader);
+    if (natLoop.second.find(pred->getLabel()) == natLoop.second.end()) {
+      preHeader->addPredecessor(pred);
+      pred->addSuccessor(preHeader);
 
-    pred->removeSuccessor(headerBlock);
-    headerBlock->removePredecessor(pred);
+      pred->removeSuccessor(headerBlock);
+      headerBlock->removePredecessor(pred);
+    }
   }
   headerBlock->addPredecessor(preHeader);
 
   cfg.addBasicBlock(preHeader);
+
+  return preHeader;
 }
 
 set<string> getAllDefns(set<Instr *> blockInstrs) {
@@ -114,8 +118,10 @@ template <class T> bool noInterset(set<T> set1, set<T> set2) {
   return !hasIntersection;
 }
 
-set<Instr *> identLoopInvarInstrs(CFG &cfg, reachDefType reachDef,
-                                  pair<string, set<string>> natLoop) {
+map<string, set<Instr *>>
+identLoopInvarInstrs(CFG &cfg, reachDefType reachDef,
+                     pair<string, set<string>> natLoop) {
+  map<string, set<Instr *>> res;
   set<Instr *> isLI;
   // iterate to convergence:
   //  for every instruction in the loop:
@@ -129,6 +135,7 @@ set<Instr *> identLoopInvarInstrs(CFG &cfg, reachDefType reachDef,
       auto block = cfg.getBlock(node);
       std::cout << "This natural loop block is: " << block->getLabel()
                 << std::endl;
+      set<Instr *> isLI;
       for (const auto &instr : block->getInstrs()) {
         if (instr->contains("args")) {
           bool loopInvar = true;
@@ -149,12 +156,119 @@ set<Instr *> identLoopInvarInstrs(CFG &cfg, reachDefType reachDef,
               break;
             }
           }
-          if (loopInvar)
+          if (loopInvar) {
+            res[block->getLabel()].insert(instr);
             isLI.insert(instr);
+          }
         }
       }
     }
   } while (vLISize != isLI.size());
 
-  return isLI;
+  return res;
+}
+
+bool defnDominateUses(CFG &cfg, pair<Instr *, string> instrBlock,
+                      pair<string, set<string>> natLoop) {
+  // find the definition of candidateInstr;
+  // find in the `natLoop` which blocks uses this definition, if they use, check
+  // if `blockLabel` dominates that block
+  auto &candidateInstr = instrBlock.first;
+  auto &blockLabel = instrBlock.second;
+
+  string definedVar = candidateInstr->at("dest");
+  auto dominatees = cfg.getDominatees(blockLabel);
+
+  for (const auto blockName : natLoop.second) {
+    auto blockInLoop = cfg.getBlock(blockName);
+    for (const auto &instr : blockInLoop->getInstrs()) {
+      if (instr->contains("args")) {
+        for (const auto &arg : instr->at("args")) {
+          if (arg.get<string>() == definedVar) {
+            if (dominatees.find(blockName) == dominatees.end())
+              return false;
+          }
+        }
+      }
+    }
+  }
+  std::cout << "Definition: " << definedVar << " dominates all uses.\n";
+  return true;
+}
+
+bool checkReDefn(CFG &cfg, pair<Instr *, string> instrBlock,
+                 pair<string, set<string>> natLoop) {
+  auto &candidateInstr = instrBlock.first;
+  auto &blockLabel = instrBlock.second;
+
+  string definedVar = candidateInstr->at("dest");
+
+  for (const auto blockName : natLoop.second) {
+    if (blockName != blockLabel) {
+      auto blockInLoop = cfg.getBlock(blockName);
+      for (const auto &instr : blockInLoop->getInstrs()) {
+        if (instr->contains("dest") && instr->at("dest") == definedVar)
+          return false;
+      }
+    }
+  }
+  std::cout << "No re-definition of " << definedVar << " in this loop.\n";
+  return true;
+}
+
+set<string> getAllLoopExits(CFG &cfg, pair<string, set<string>> natLoop) {
+  set<string> allExits;
+
+  for (const auto blockLabel : natLoop.second) {
+    auto block = cfg.getBlock(blockLabel);
+    for (const auto succ : block->getSuccessors()) {
+      if (natLoop.second.find(succ->getLabel()) == natLoop.second.end()) {
+        allExits.insert(succ->getLabel());
+      }
+    }
+  }
+  return allExits;
+}
+
+bool dominateAllExits(CFG &cfg, pair<Instr *, string> instrBlock,
+                      pair<string, set<string>> natLoop) {
+  set<string> allExits = getAllLoopExits(cfg, natLoop);
+  std::cout << "Exits: " << std::endl;
+  for (const auto exit : allExits)
+    std::cout << exit << std::endl;
+
+  auto dominatees = cfg.getDominatees(instrBlock.second);
+  for (const auto exit : allExits) {
+    if (dominatees.find(exit) == dominatees.end())
+      return false;
+  }
+  return true;
+}
+
+void insertToPreHead(CFG &cfg, shared_ptr<Block> preHeader,
+                     pair<Instr *, string> instrBlock,
+                     pair<string, set<string>> natLoop) {
+  // we can move `instr` to `preHeader` iff
+  // 1. the definition dominates all uses;
+  // 2. no other definitions of the same variable exists in the loop
+  // 3. the instruction dominates all loop exits
+  auto &candidateInstr = instrBlock.first;
+  int insertCnt = 0;
+  if (dominateAllExits(cfg, instrBlock, natLoop)) {
+    auto block = cfg.getBlock(instrBlock.second);
+    if (candidateInstr->contains("dest")) {
+      if (defnDominateUses(cfg, instrBlock, natLoop) &&
+          checkReDefn(cfg, instrBlock, natLoop)) {
+        // save to move
+        preHeader->insertInstr(instrBlock.first, insertCnt);
+        block->removeInstr(instrBlock.first);
+        ++insertCnt;
+      }
+    } else {
+      // save to move
+      preHeader->insertInstr(instrBlock.first, insertCnt);
+      block->removeInstr(instrBlock.first);
+      ++insertCnt;
+    }
+  }
 }

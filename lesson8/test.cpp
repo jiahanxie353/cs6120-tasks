@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
       for (const auto node : entryLoopPair.second) {
         std::cout << node << std::endl;
       }
-      insertPreheader(cfg, entryLoopPair);
+      auto preHeader = insertPreheader(cfg, entryLoopPair);
 
       const string analysis = "reaching definition";
       set<Instr *> initValues;
@@ -36,8 +36,19 @@ int main(int argc, char *argv[]) {
 
       auto lIInstrs = identLoopInvarInstrs(cfg, reachDef, entryLoopPair);
 
-      for (const auto &li : lIInstrs)
-        std::cout << li->dump() << std::endl;
+      for (const auto [k, v] : lIInstrs) {
+        std::cout << "Block " << k << " has LI: \n";
+        for (const auto elm : v) {
+          std::cout << elm->dump() << std::endl;
+          insertToPreHead(cfg, preHeader, std::make_pair(elm, k),
+                          entryLoopPair);
+        }
+      }
+
+      std::cout << "The instructions in the pre-headers are: " << std::endl;
+      for (const auto instr : preHeader->getInstrs()) {
+        std::cout << instr->dump() << std::endl;
+      }
     }
   }
 }

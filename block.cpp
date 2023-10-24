@@ -21,6 +21,13 @@ void Block::insertInstr(Instr *instr, int pos) {
   instructions.insert(instructions.begin() + pos, instr);
 }
 
+void Block::removeInstr(Instr *instr) {
+  for (int pos = 0; pos < instructions.size(); ++pos) {
+    if (instructions[pos] == instr)
+      removeInstr(pos);
+  }
+}
+
 void Block::removeInstr(int pos) {
   instructions.erase(instructions.begin() + pos);
 }
