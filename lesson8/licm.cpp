@@ -53,7 +53,7 @@ set<string> getAllDefns(set<Instr *> blockInstrs) {
 }
 
 set<pair<string, Instr *>> findReachedDef(CFG &cfg, string blockLabel,
-                                          Instr *argInstr, string argName,
+                                          string argName,
                                           reachDefType reachDef) {
   set<pair<string, Instr *>> res;
 
@@ -103,36 +103,58 @@ set<pair<string, Instr *>> findReachedDef(CFG &cfg, string blockLabel,
   return res;
 }
 
-vector<Instr *> identLoopInvarInstrs(CFG &cfg, reachDefType reachDef,
-                                     pair<string, set<string>> natLoop) {
+template <class T> bool noInterset(set<T> set1, set<T> set2) {
+  bool hasIntersection = false;
+  for (const auto &elem : set1) {
+    if (set2.find(elem) != set2.end()) {
+      hasIntersection = true;
+      break;
+    }
+  }
+  return !hasIntersection;
+}
+
+set<Instr *> identLoopInvarInstrs(CFG &cfg, reachDefType reachDef,
+                                  pair<string, set<string>> natLoop) {
+  set<Instr *> isLI;
   // iterate to convergence:
   //  for every instruction in the loop:
   //   mark it as LI iff, for all arguments x, either:
   //    all reaching defintions of x are outside of the loop, or
   //    there's exactly one definition, and it's already marked as LI
-  for (const auto node : natLoop.second) {
-    auto block = cfg.getBlock(node);
-    std::cout << "This natural loop block is: " << block->getLabel()
-              << std::endl;
-    for (const auto &instr : block->getInstrs()) {
-      if (instr->contains("args")) {
-        for (const auto arg : instr->at("args")) {
-          auto reachedDefns =
-              // for each "use"
-              findReachedDef(cfg, block->getLabel(), instr, arg.get<string>(),
-                             reachDef);
-          if (reachedDefns.size() > 0) {
-            for (const auto rD : reachedDefns) {
-              std::cout << "The instruction that uses: " << arg.get<string>()
-                        << " is: " << instr->dump() << std::endl;
-              std::cout << "The block that defines this arg: "
-                        << arg.get<string>() << " is: " << rD.first
-                        << std::endl;
+  int vLISize = isLI.size();
+  do {
+    vLISize = isLI.size();
+    for (const auto node : natLoop.second) {
+      auto block = cfg.getBlock(node);
+      std::cout << "This natural loop block is: " << block->getLabel()
+                << std::endl;
+      for (const auto &instr : block->getInstrs()) {
+        if (instr->contains("args")) {
+          bool loopInvar = true;
+          for (const auto arg : instr->at("args")) {
+            string argStr = arg.get<string>();
+            auto reachedDefns =
+                findReachedDef(cfg, block->getLabel(), arg.get<string>(),
+                               reachDef); // for each "use"
+
+            set<string> defnBlocks;
+            for (const auto &rD : reachedDefns)
+              defnBlocks.insert(rD.first);
+
+            if (!(noInterset<string>(defnBlocks, natLoop.second) ||
+                  (defnBlocks.size() == 1 &&
+                   isLI.find(reachedDefns.begin()->second) != isLI.end()))) {
+              loopInvar = false;
+              break;
             }
           }
+          if (loopInvar)
+            isLI.insert(instr);
         }
       }
     }
-  }
-  return {};
+  } while (vLISize != isLI.size());
+
+  return isLI;
 }

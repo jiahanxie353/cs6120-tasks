@@ -11,7 +11,7 @@ void insertPreheader(CFG &cfg,
 
 // Identifies loop-invariant instructions of this `natLoop` based in the
 // corresponding `cfg`
-vector<Instr *>
+set<Instr *>
 identLoopInvarInstrs(CFG &cfg,
                      tuple<map<shared_ptr<Block>, set<Instr *>>,
                            map<shared_ptr<Block>, set<Instr *>>>

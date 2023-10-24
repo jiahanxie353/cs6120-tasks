@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
       for (const auto node : entryLoopPair.second) {
         std::cout << node << std::endl;
       }
-      // insertPreheader(cfg, entryLoopPair);
+      insertPreheader(cfg, entryLoopPair);
 
       const string analysis = "reaching definition";
       set<Instr *> initValues;
@@ -35,6 +35,9 @@ int main(int argc, char *argv[]) {
       auto reachDef = workList<Instr *>(dataFlow);
 
       auto lIInstrs = identLoopInvarInstrs(cfg, reachDef, entryLoopPair);
+
+      for (const auto &li : lIInstrs)
+        std::cout << li->dump() << std::endl;
     }
   }
 }

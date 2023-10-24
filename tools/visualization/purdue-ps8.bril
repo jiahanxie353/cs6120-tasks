@@ -10,8 +10,6 @@
     cond_x: bool = gt x c;
     cond_y: bool = gt y c;
 .L1:
-    four: int = const 4;
-    five: int = add four one;
     br cond_x .L4 .L5;
 .L5:
     br cond_y .L2 .L6;
@@ -24,7 +22,7 @@
     x: int = add x one;
 .L3:
     x: int = add x one;
-    x: int = add x one;
+    z: int = add two one;
     jmp .L1;
 .L4:
     print;

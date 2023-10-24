@@ -63,21 +63,6 @@
           "label": "L1"
         },
         {
-          "dest": "four",
-          "op": "const",
-          "type": "int",
-          "value": 4
-        },
-        {
-          "args": [
-            "four",
-            "one"
-          ],
-          "dest": "five",
-          "op": "add",
-          "type": "int"
-        },
-        {
           "args": [
             "cond_x"
           ],
@@ -162,10 +147,10 @@
         },
         {
           "args": [
-            "x",
+            "two",
             "one"
           ],
-          "dest": "x",
+          "dest": "z",
           "op": "add",
           "type": "int"
         },
