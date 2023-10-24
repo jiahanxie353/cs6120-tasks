@@ -23,18 +23,18 @@ int main(int argc, char *argv[]) {
       for (const auto node : entryLoopPair.second) {
         std::cout << node << std::endl;
       }
-      insertPreheader(cfg, entryLoopPair);
+      // insertPreheader(cfg, entryLoopPair);
 
-      for (const auto b : cfg.getBasicBlocks()) {
-        std::cout << b->getLabel() << "'s predecessors are: \n";
-        for (const auto p : b->getPredecessors()) {
-          std::cout << p->getLabel() << std::endl;
-        }
-        std::cout << b->getLabel() << "'s successors are: \n";
-        for (const auto s : b->getSuccessors()) {
-          std::cout << s->getLabel() << std::endl;
-        }
+      const string analysis = "reaching definition";
+      set<Instr *> initValues;
+      if (brilFcn.contains("args")) {
+        for (auto &arg : brilFcn.at("args"))
+          initValues.insert(&arg);
       }
+      DataFlow<Instr *> dataFlow(analysis, cfg, initValues);
+      auto reachDef = workList<Instr *>(dataFlow);
+
+      auto lIInstrs = identLoopInvarInstrs(cfg, reachDef, entryLoopPair);
     }
   }
 }

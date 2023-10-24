@@ -1,0 +1,188 @@
+{
+  "functions": [
+    {
+      "args": [
+        {
+          "name": "c",
+          "type": "int"
+        }
+      ],
+      "instrs": [
+        {
+          "label": "entry"
+        },
+        {
+          "dest": "x",
+          "op": "const",
+          "type": "int",
+          "value": 4
+        },
+        {
+          "dest": "y",
+          "op": "const",
+          "type": "int",
+          "value": 7
+        },
+        {
+          "dest": "one",
+          "op": "const",
+          "type": "int",
+          "value": 1
+        },
+        {
+          "dest": "two",
+          "op": "const",
+          "type": "int",
+          "value": 2
+        },
+        {
+          "dest": "three",
+          "op": "const",
+          "type": "int",
+          "value": 3
+        },
+        {
+          "args": [
+            "x",
+            "c"
+          ],
+          "dest": "cond_x",
+          "op": "gt",
+          "type": "bool"
+        },
+        {
+          "args": [
+            "y",
+            "c"
+          ],
+          "dest": "cond_y",
+          "op": "gt",
+          "type": "bool"
+        },
+        {
+          "label": "L1"
+        },
+        {
+          "dest": "four",
+          "op": "const",
+          "type": "int",
+          "value": 4
+        },
+        {
+          "args": [
+            "four",
+            "one"
+          ],
+          "dest": "five",
+          "op": "add",
+          "type": "int"
+        },
+        {
+          "args": [
+            "cond_x"
+          ],
+          "labels": [
+            "L4",
+            "L5"
+          ],
+          "op": "br"
+        },
+        {
+          "label": "L5"
+        },
+        {
+          "args": [
+            "cond_y"
+          ],
+          "labels": [
+            "L2",
+            "L6"
+          ],
+          "op": "br"
+        },
+        {
+          "label": "L6"
+        },
+        {
+          "args": [
+            "x",
+            "one"
+          ],
+          "dest": "a",
+          "op": "add",
+          "type": "int"
+        },
+        {
+          "args": [
+            "x",
+            "two"
+          ],
+          "dest": "y",
+          "op": "add",
+          "type": "int"
+        },
+        {
+          "labels": [
+            "L3"
+          ],
+          "op": "jmp"
+        },
+        {
+          "label": "L2"
+        },
+        {
+          "args": [
+            "x",
+            "one"
+          ],
+          "dest": "y",
+          "op": "add",
+          "type": "int"
+        },
+        {
+          "args": [
+            "x",
+            "one"
+          ],
+          "dest": "x",
+          "op": "add",
+          "type": "int"
+        },
+        {
+          "label": "L3"
+        },
+        {
+          "args": [
+            "x",
+            "one"
+          ],
+          "dest": "x",
+          "op": "add",
+          "type": "int"
+        },
+        {
+          "args": [
+            "x",
+            "one"
+          ],
+          "dest": "x",
+          "op": "add",
+          "type": "int"
+        },
+        {
+          "labels": [
+            "L1"
+          ],
+          "op": "jmp"
+        },
+        {
+          "label": "L4"
+        },
+        {
+          "op": "print"
+        }
+      ],
+      "name": "main"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+@main {
+.entry:
+    result: int = const 0;
+    one: int = const 1;
+    a: int = id one;
+    b: int = const 2;
+    start: int = const 0;
+    end: int = const 7;
+    cond: bool = lt start end;
+    br cond .loop .exit;
+.loop:
+    start: int = add start one;
+    a_mul_b: int = mul a b;
+    result: int = add result a_mul_b;
+    cond: bool = lt start end;
+    br cond .loop .exit;
+.exit:
+    print result;
+}

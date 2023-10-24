@@ -1,0 +1,32 @@
+@main (c: int) {
+.entry:
+    x: int = const 4;
+    y: int = const 7;
+
+    one: int = const 1;
+    two: int = const 2;
+    three: int = const 3;
+
+    cond_x: bool = gt x c;
+    cond_y: bool = gt y c;
+.L1:
+    four: int = const 4;
+    five: int = add four one;
+    br cond_x .L4 .L5;
+.L5:
+    br cond_y .L2 .L6;
+.L6:
+    a: int = add x one;
+    y: int = add x two;
+    jmp .L3;
+.L2:
+    y: int = add x one;
+    x: int = add x one;
+.L3:
+    x: int = add x one;
+    x: int = add x one;
+    jmp .L1;
+.L4:
+    print;
+}
+
