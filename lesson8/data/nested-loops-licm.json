@@ -21,10 +21,14 @@
                     "label": "loop_entry"
                 },
                 {
-                    "labels": [
-                        "preHeader3"
+                    "args": [
+                        "out_loop_cond"
                     ],
-                    "op": "jmp"
+                    "labels": [
+                        "left",
+                        "preHeader1"
+                    ],
+                    "op": "br"
                 },
                 {
                     "label": "left"
@@ -42,31 +46,7 @@
                     "op": "jmp"
                 },
                 {
-                    "labels": [
-                        "preHeader2"
-                    ],
-                    "op": "jmp"
-                },
-                {
                     "label": "right"
-                },
-                {
-                    "args": [
-                        "b",
-                        "a"
-                    ],
-                    "dest": "d",
-                    "op": "sub",
-                    "type": "int"
-                },
-                {
-                    "args": [
-                        "d",
-                        "a"
-                    ],
-                    "dest": "in_loop_cond",
-                    "op": "gt",
-                    "type": "bool"
                 },
                 {
                     "args": [
@@ -77,12 +57,6 @@
                         "no_in_loop"
                     ],
                     "op": "br"
-                },
-                {
-                    "labels": [
-                        "preHeader1"
-                    ],
-                    "op": "jmp"
                 },
                 {
                     "label": "in_loop_mid"
@@ -131,12 +105,6 @@
                     "op": "br"
                 },
                 {
-                    "labels": [
-                        "preHeader1"
-                    ],
-                    "op": "jmp"
-                },
-                {
                     "label": "no_in_loop"
                 },
                 {
@@ -148,12 +116,6 @@
                 {
                     "labels": [
                         "out_loop_exit"
-                    ],
-                    "op": "jmp"
-                },
-                {
-                    "labels": [
-                        "preHeader2"
                     ],
                     "op": "jmp"
                 },
@@ -195,6 +157,12 @@
                     "op": "print"
                 },
                 {
+                    "labels": [
+                        "dummy_exit"
+                    ],
+                    "op": "jmp"
+                },
+                {
                     "label": "preHeader0"
                 },
                 {
@@ -216,16 +184,6 @@
                     "type": "bool"
                 },
                 {
-                    "args": [
-                        "out_loop_cond"
-                    ],
-                    "labels": [
-                        "left",
-                        "right"
-                    ],
-                    "op": "br"
-                },
-                {
                     "labels": [
                         "loop_entry"
                     ],
@@ -235,28 +193,35 @@
                     "label": "preHeader1"
                 },
                 {
-                    "labels": [
-                        "no_in_loop"
+                    "args": [
+                        "b",
+                        "a"
                     ],
-                    "op": "jmp"
+                    "dest": "d",
+                    "op": "sub",
+                    "type": "int"
                 },
                 {
-                    "label": "preHeader2"
-                },
-                {
-                    "labels": [
-                        "out_loop_exit"
+                    "args": [
+                        "d",
+                        "a"
                     ],
-                    "op": "jmp"
-                },
-                {
-                    "label": "preHeader3"
+                    "dest": "in_loop_cond",
+                    "op": "gt",
+                    "type": "bool"
                 },
                 {
                     "labels": [
                         "right"
                     ],
                     "op": "jmp"
+                },
+                {
+                    "label": "dummy_exit"
+                },
+                {
+                    "args": [],
+                    "op": "ret"
                 }
             ],
             "name": "main"

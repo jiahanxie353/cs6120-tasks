@@ -39,11 +39,27 @@ shared_ptr<Block> insertPreheader(CFG &cfg, pair<string, set<string>> natLoop) {
       preHeader->addPredecessor(pred);
       pred->addSuccessor(preHeader);
 
-      auto labels = json::array();
-      labels.push_back(preHeaderName);
-      auto jP = new json({{"labels", labels}, {"op", "jmp"}});
+      bool isBranch = false;
+      if (pred->getInstrs().back()->contains("op")) {
+        if (pred->getInstrs().back()->at("op").get<string>() == "jmp")
+          pred->removeInstr(pred->getInstrs().size() - 1);
+        if (pred->getInstrs().back()->at("op").get<string>() == "br") {
+          isBranch = true;
+          for (auto &lbl : pred->getInstrs().back()->at("labels")) {
+            if (lbl.get<string>() == headerBlock->getLabel()) {
+              lbl = preHeader->getLabel();
+            }
+          }
+        }
+      }
 
-      pred->insertInstr(jP, pred->getInstrs().size());
+      if (!isBranch) {
+        auto labels = json::array();
+        labels.push_back(preHeaderName);
+        auto jP = new json({{"labels", labels}, {"op", "jmp"}});
+
+        pred->insertInstr(jP, pred->getInstrs().size());
+      }
 
       pred->removeSuccessor(headerBlock);
       headerBlock->removePredecessor(pred);
@@ -265,6 +281,10 @@ void insertToPreHead(CFG &cfg, shared_ptr<Block> preHeader,
 
   if (dominateAllExits(cfg, instrBlock, natLoop)) {
     auto block = cfg.getBlock(instrBlock.second);
+    if (candidateInstr->contains("op") &&
+        (candidateInstr->at("op").get<string>() == "br" ||
+         candidateInstr->at("op").get<string>() == "jmp"))
+      return;
     if (candidateInstr->contains("dest")) {
       if (defnDominateUses(cfg, instrBlock, natLoop) &&
           checkReDefn(cfg, instrBlock, natLoop)) {

@@ -35,11 +35,13 @@ int main(int argc, char *argv[]) {
 
     CFG cfg = CFG(brilFcn);
 
-    std::set<std::pair<std::string, std::set<std::string>>> allNatLoops =
-        findNatLoops(cfg);
+    set<pair<string, set<string>>> allNatLoops = findNatLoops(cfg);
+
+    std::cout << "Function " << brilFcn.at("name") << " has "
+              << allNatLoops.size() << " number of natural loops.\n";
 
     for (const auto entryLoopPair : allNatLoops) {
-      std::cout << "The entry of the current loop is: " << entryLoopPair.first
+      std::cout << "\nThe entry of the current loop is: " << entryLoopPair.first
                 << std::endl;
       std::cout << "The corresponding natural loop is: \n";
       for (const auto node : entryLoopPair.second) {
@@ -70,12 +72,29 @@ int main(int argc, char *argv[]) {
       auto labels = json::array();
       labels.push_back(entryLoopPair.first);
       auto jmpJson = new json({{"labels", labels}, {"op", "jmp"}});
-      // auto jmpJson = new json({{"jmp", entryLoopPair.first}});
       preHeader->insertInstr(jmpJson, preHeader->getInstrs().size());
 
       std::cout << "The instructions in the pre-headers are: " << std::endl;
       for (const auto instr : preHeader->getInstrs()) {
         std::cout << instr->dump() << std::endl;
+      }
+    }
+
+    for (auto block : cfg.getBasicBlocks()) {
+      if (block->getSuccessors().size() == 0) {
+        auto exitBlock = std::make_shared<Block>("dummy_exit");
+        auto labelJson = new json({{"label", "dummy_exit"}});
+        exitBlock->insertInstr(labelJson, 0);
+        auto retJson = new json({{"op", "ret"}, {"args", json::array()}});
+        exitBlock->insertInstr(retJson, 1);
+        exitBlock->addPredecessor(block);
+
+        block->addSuccessor(exitBlock);
+        auto jmpJson = new json({{"op", "jmp"}, {"labels", {"dummy_exit"}}});
+        block->insertInstr(jmpJson, block->getInstrs().size());
+
+        cfg.addBasicBlock(exitBlock);
+        break;
       }
     }
 

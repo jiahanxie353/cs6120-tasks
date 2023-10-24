@@ -168,8 +168,8 @@ set<pair<string, set<string>>> findNatLoops(CFG &cfg) {
     if (currRes.size() > 0) {
       currRes.insert(tail);
       currRes.insert(head);
+      res.insert(std::make_pair(head, currRes));
     }
-    res.insert(std::make_pair(head, currRes));
   }
 
   return res;
