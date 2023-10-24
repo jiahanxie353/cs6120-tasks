@@ -39,6 +39,12 @@ shared_ptr<Block> insertPreheader(CFG &cfg, pair<string, set<string>> natLoop) {
       preHeader->addPredecessor(pred);
       pred->addSuccessor(preHeader);
 
+      auto labels = json::array();
+      labels.push_back(preHeaderName);
+      auto jP = new json({{"labels", labels}, {"op", "jmp"}});
+
+      pred->insertInstr(jP, pred->getInstrs().size());
+
       pred->removeSuccessor(headerBlock);
       headerBlock->removePredecessor(pred);
     }

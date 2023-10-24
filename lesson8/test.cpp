@@ -67,7 +67,10 @@ int main(int argc, char *argv[]) {
         }
       }
 
-      auto jmpJson = new json({{"jmp", entryLoopPair.first}});
+      auto labels = json::array();
+      labels.push_back(entryLoopPair.first);
+      auto jmpJson = new json({{"labels", labels}, {"op", "jmp"}});
+      // auto jmpJson = new json({{"jmp", entryLoopPair.first}});
       preHeader->insertInstr(jmpJson, preHeader->getInstrs().size());
 
       std::cout << "The instructions in the pre-headers are: " << std::endl;

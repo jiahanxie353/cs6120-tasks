@@ -12,7 +12,19 @@
                     "value": 42
                 },
                 {
+                    "labels": [
+                        "preHeader0"
+                    ],
+                    "op": "jmp"
+                },
+                {
                     "label": "loop_entry"
+                },
+                {
+                    "labels": [
+                        "preHeader3"
+                    ],
+                    "op": "jmp"
                 },
                 {
                     "label": "left"
@@ -26,6 +38,12 @@
                 {
                     "labels": [
                         "out_loop_exit"
+                    ],
+                    "op": "jmp"
+                },
+                {
+                    "labels": [
+                        "preHeader2"
                     ],
                     "op": "jmp"
                 },
@@ -59,6 +77,12 @@
                         "no_in_loop"
                     ],
                     "op": "br"
+                },
+                {
+                    "labels": [
+                        "preHeader1"
+                    ],
+                    "op": "jmp"
                 },
                 {
                     "label": "in_loop_mid"
@@ -107,6 +131,12 @@
                     "op": "br"
                 },
                 {
+                    "labels": [
+                        "preHeader1"
+                    ],
+                    "op": "jmp"
+                },
+                {
                     "label": "no_in_loop"
                 },
                 {
@@ -118,6 +148,12 @@
                 {
                     "labels": [
                         "out_loop_exit"
+                    ],
+                    "op": "jmp"
+                },
+                {
+                    "labels": [
+                        "preHeader2"
                     ],
                     "op": "jmp"
                 },
@@ -190,25 +226,37 @@
                     "op": "br"
                 },
                 {
-                    "jmp": "loop_entry"
+                    "labels": [
+                        "loop_entry"
+                    ],
+                    "op": "jmp"
                 },
                 {
                     "label": "preHeader1"
                 },
                 {
-                    "jmp": "no_in_loop"
+                    "labels": [
+                        "no_in_loop"
+                    ],
+                    "op": "jmp"
                 },
                 {
                     "label": "preHeader2"
                 },
                 {
-                    "jmp": "out_loop_exit"
+                    "labels": [
+                        "out_loop_exit"
+                    ],
+                    "op": "jmp"
                 },
                 {
                     "label": "preHeader3"
                 },
                 {
-                    "jmp": "right"
+                    "labels": [
+                        "right"
+                    ],
+                    "op": "jmp"
                 }
             ],
             "name": "main"
