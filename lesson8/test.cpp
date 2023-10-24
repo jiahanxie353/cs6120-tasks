@@ -9,8 +9,30 @@ using std::string;
 int main(int argc, char *argv[]) {
   json brilProg = readJson(argv[1]);
 
-  std::shared_ptr<Block> entryBlock;
+  string outputJsonName = string(argv[1]);
+  size_t dotPos = outputJsonName.rfind('.');
+  if (dotPos != string::npos) {
+    string licmStr = "-licm.";
+    outputJsonName.insert(dotPos, licmStr.append("json"));
+    const int jsonDotLen = 5;
+    outputJsonName =
+        outputJsonName.substr(0, outputJsonName.size() - jsonDotLen);
+  }
+  std::ofstream outfile(outputJsonName);
+
+  json outJson;
+  outJson["functions"] = json::array();
+
   for (auto &brilFcn : brilProg.at("functions")) {
+    json fcnJson;
+
+    if (brilFcn.contains("name"))
+      fcnJson["name"] = brilFcn.at("name");
+    if (brilFcn.contains("args"))
+      fcnJson["args"] = brilFcn.at("args");
+
+    fcnJson["instrs"] = json::array();
+
     CFG cfg = CFG(brilFcn);
 
     std::set<std::pair<std::string, std::set<std::string>>> allNatLoops =
@@ -45,10 +67,20 @@ int main(int argc, char *argv[]) {
         }
       }
 
+      auto jmpJson = new json({{"jmp", entryLoopPair.first}});
+      preHeader->insertInstr(jmpJson, preHeader->getInstrs().size());
+
       std::cout << "The instructions in the pre-headers are: " << std::endl;
       for (const auto instr : preHeader->getInstrs()) {
         std::cout << instr->dump() << std::endl;
       }
     }
+
+    for (const auto block : cfg.getBasicBlocks()) {
+      for (const auto instr : block->getInstrs())
+        fcnJson["instrs"].push_back(*instr);
+    }
+    outJson["functions"].push_back(fcnJson);
   }
+  outfile << outJson.dump(4) << std::endl;
 }

@@ -29,6 +29,9 @@ shared_ptr<Block> insertPreheader(CFG &cfg, pair<string, set<string>> natLoop) {
 
   shared_ptr<Block> preHeader = std::make_shared<Block>(preHeaderName);
 
+  auto jP = new json({{"label", preHeaderName}});
+  preHeader->insertInstr(jP, 0);
+
   preHeader->addSuccessor(headerBlock);
 
   for (auto &pred : headerBlock->getPredecessors()) {
@@ -253,22 +256,20 @@ void insertToPreHead(CFG &cfg, shared_ptr<Block> preHeader,
   // 2. no other definitions of the same variable exists in the loop
   // 3. the instruction dominates all loop exits
   auto &candidateInstr = instrBlock.first;
-  int insertCnt = 0;
+
   if (dominateAllExits(cfg, instrBlock, natLoop)) {
     auto block = cfg.getBlock(instrBlock.second);
     if (candidateInstr->contains("dest")) {
       if (defnDominateUses(cfg, instrBlock, natLoop) &&
           checkReDefn(cfg, instrBlock, natLoop)) {
         // save to move
-        preHeader->insertInstr(instrBlock.first, insertCnt);
+        preHeader->insertInstr(instrBlock.first, preHeader->getInstrs().size());
         block->removeInstr(instrBlock.first);
-        ++insertCnt;
       }
     } else {
       // save to move
-      preHeader->insertInstr(instrBlock.first, insertCnt);
+      preHeader->insertInstr(instrBlock.first, preHeader->getInstrs().size());
       block->removeInstr(instrBlock.first);
-      ++insertCnt;
     }
   }
 }
