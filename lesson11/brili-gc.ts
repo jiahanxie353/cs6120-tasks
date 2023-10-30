@@ -42,10 +42,26 @@ export class Key {
  * A Heap maps Keys to arrays of a given type.
  */
 export class Heap<X> {
-
+    private readonly rc: Map<number, number>
     private readonly storage: Map<number, X[]>
+    private size: number
+
     constructor() {
+        this.rc = new Map()
         this.storage = new Map()
+        this.size = 0
+    }
+
+    incrSize() {
+      this.size++;
+    }
+
+    decrSize() {
+      this.size--;
+    }
+
+    getSize(): number {
+      return this.size;
     }
 
     isEmpty(): boolean {
@@ -69,6 +85,7 @@ export class Heap<X> {
         }
         let base = this.getNewBase();
         this.storage.set(base, new Array(amt))
+        this.incrSize();
         return new Key(base, 0);
     }
 
@@ -76,9 +93,15 @@ export class Heap<X> {
         if (this.storage.has(key.base) && key.offset == 0) {
             this.freeKey(key);
             this.storage.delete(key.base);
+            this.decrSize();
         } else {
             throw error(`Tried to free illegal memory location base: ${key.base}, offset: ${key.offset}. Offset must be 0.`);
         }
+    }
+
+    exists(key: Key): boolean {
+      let value = this.storage.get(key.base);
+      return value !== undefined && value.length > key.offset && key.offset >= 0;
     }
 
     write(key: Key, val: X) {
@@ -97,6 +120,32 @@ export class Heap<X> {
         } else {
             throw error(`Uninitialized heap location ${key.base} and/or illegal offset ${key.offset}`);
         }
+    }
+
+    incRefCnt(key: Key) {
+        let cnt = this.rc.get(key.base);
+        if (cnt != undefined) {
+          this.rc.set(key.base, cnt + 1);
+        }
+    }
+
+    decRefCnt(key: Key) {
+      let cnt = this.rc.get(key.base) ? this.rc.get(key.base) : 0;
+
+      this.rc.set(key.base, cnt ? cnt - 1 : 0);
+
+      if (cnt && cnt - 1 <= 0) {
+        let vals = this.storage.get(key.base);
+        if (vals) {
+          for (let i = 0; i < vals.length; i++) {
+            if (isPtr(vals[i])) {
+              this.decRefCnt((vals[i] as Pointer).loc);
+            }
+          }
+        }
+        this.rc.delete(key.base);
+        this.storage.delete(key.base);
+      }
     }
 }
 
@@ -236,6 +285,10 @@ function checkArgs(instr: bril.Operation, count: number) {
   }
 }
 
+function isPtr(value: Value) : boolean {
+  return !(typeof value !== "object" || value instanceof BigInt);
+}
+
 function getPtr(instr: bril.Operation, env: Env, index: number): Pointer {
   let val = getArgument(instr, env, index);
   if (typeof val !== 'object' || val instanceof BigInt) {
@@ -355,6 +408,10 @@ function evalCall(instr: bril.Operation, state: State): Action {
 
     // Set the value of the arg in the new (function) environment.
     newEnv.set(params[i].name, value);
+
+    if (isPtr(value)) {
+      state.heap.incRefCnt((value as Pointer).loc);
+    }
   }
 
   // Invoke the interpreter on the function.
@@ -399,8 +456,25 @@ function evalCall(instr: bril.Operation, state: State): Action {
     if (!typeCmp(instr.type, func.type)) {
       throw error(`type of value returned by function does not match declaration`);
     }
+
+    if (isPtr(retVal)) {
+      state.heap.incRefCnt((retVal as Pointer).loc);
+    }
+
+    let prevVal = state.env.get(instr.dest);
+    if (prevVal !== undefined && isPtr(prevVal)) {
+      state.heap.decRefCnt((prevVal as Pointer).loc);
+    }
+
     state.env.set(instr.dest, retVal);
   }
+
+  newEnv.forEach((value: Value, _) => {
+    if (isPtr(value)) {
+      state.heap.decRefCnt((value as Pointer).loc);
+    }
+  });
+
   return NEXT;
 }
 
@@ -451,6 +525,13 @@ function evalInstr(instr: bril.Instruction, state: State): Action {
 
   case "id": {
     let val = getArgument(instr, state.env, 0);
+    if (isPtr(val)) {
+      state.heap.incRefCnt((val as Pointer).loc);
+    }
+    let prevVal = state.env.get(instr.dest);
+    if (prevVal !== undefined && isPtr(prevVal)) {
+      state.heap.decRefCnt((prevVal as Pointer).loc);
+    }
     state.env.set(instr.dest, val);
     return NEXT;
   }
@@ -641,6 +722,11 @@ function evalInstr(instr: bril.Instruction, state: State): Action {
       throw error(`cannot allocate non-pointer type ${instr.type}`);
     }
     let ptr = alloc(typ, Number(amt), state.heap);
+    state.heap.incRefCnt(ptr.loc);
+    let prevVal = state.env.get(instr.dest);
+    if (prevVal !== undefined && isPtr(prevVal)) {
+      state.heap.decRefCnt((prevVal as Pointer).loc);
+    }
     state.env.set(instr.dest, ptr);
     return NEXT;
   }
@@ -653,6 +739,17 @@ function evalInstr(instr: bril.Instruction, state: State): Action {
 
   case "store": {
     let target = getPtr(instr, state.env, 0);
+    let value: Value = getArgument(instr, state.env, 1, target.type);
+    if (isPtr(value)) {
+      if (state.heap.exists(target.loc)) {
+        let prevVal = state.heap.read(target.loc);
+        if (isPtr(prevVal)) {
+          state.heap.decRefCnt((prevVal as Pointer).loc);
+        }
+      }
+
+      state.heap.incRefCnt((value as Pointer).loc);
+    }
     state.heap.write(target.loc, getArgument(instr, state.env, 1, target.type));
     return NEXT;
   }
@@ -663,6 +760,14 @@ function evalInstr(instr: bril.Instruction, state: State): Action {
     if (val === undefined || val === null) {
       throw error(`Pointer ${instr.args![0]} points to uninitialized data`);
     } else {
+      if (isPtr(val)) {
+        state.heap.incRefCnt((val as Pointer).loc);
+      }
+      const prevVal = state.env.get(instr.dest);
+      if (prevVal !== undefined && isPtr(prevVal)) {
+        state.heap.decRefCnt((prevVal as Pointer).loc);
+      }
+
       state.env.set(instr.dest, val);
     }
     return NEXT;
@@ -671,6 +776,13 @@ function evalInstr(instr: bril.Instruction, state: State): Action {
   case "ptradd": {
     let ptr = getPtr(instr, state.env, 0)
     let val = getInt(instr, state.env, 1)
+
+    state.heap.incRefCnt(ptr.loc);
+      let prevVal = state.env.get(instr.dest);
+      if (prevVal !== undefined && isPtr(prevVal)) {
+          state.heap.decRefCnt((prevVal as Pointer).loc);
+      }
+
     state.env.set(instr.dest, { loc: ptr.loc.add(Number(val)), type: ptr.type })
     return NEXT;
   }
@@ -943,12 +1055,19 @@ function evalProg(prog: bril.Program) {
   }
   evalFunc(main, state);
 
+  newEnv.forEach((value: Value) => {
+    if (isPtr(value)) {
+      state.heap.decRefCnt((value as Pointer).loc);
+    }
+  });
+
   if (!heap.isEmpty()) {
     throw error(`Some memory locations have not been freed by end of execution.`);
   }
 
   if (profiling) {
     console.error(`total_dyn_inst: ${state.icount}`);
+    console.error(`heap_size: ${state.heap.getSize()}`);
   }
 
 }

@@ -1,0 +1,14 @@
+extract = 'heap_size: (\d+)'
+benchmarks = './bril/benchmarks/**/*.bril'
+
+[runs.baseline]
+pipeline = [
+    "bril2json",
+    "brili -p {args}"
+]
+
+[runs.gc]
+pipeline = [
+    "bril2json",
+    "deno run --no-config '../brili-gc.ts' -p {args}",
+]

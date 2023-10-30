@@ -1,0 +1,7 @@
+[envs.no-gc]
+command = "bril2json < {filename} | brili {args}"
+output.out = "-"
+
+[envs.gc]
+command = "bril2json < {filename} | deno run --no-config '../brili-gc.ts' {args}"
+output.out = "-"
