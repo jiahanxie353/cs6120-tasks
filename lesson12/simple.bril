@@ -1,0 +1,34 @@
+@f(y: int) : int {
+    two: int = const 2;
+    res: int = mul y two;
+    ret res;
+}
+
+@g(y: int) : int {
+    one: int = const 1;
+    res: int = add y one;
+    ret res;
+}
+
+@main {
+    one: int = const 1;
+    hundred: int = const 100;
+
+    x: int = const 2;
+    y: int = add x one;
+  
+    cond: bool = lt x hundred;
+    br cond .f_br .g_br;
+
+.f_br:
+    z: int = call @f y;
+    jmp .main_ret;
+
+.g_br:
+    z: int = call @g y;
+    jmp .main_ret;
+
+.main_ret:
+    print z;
+    ret z;
+}

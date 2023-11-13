@@ -1,0 +1,176 @@
+{
+  "functions": [
+    {
+      "args": [
+        {
+          "name": "y",
+          "type": "int"
+        }
+      ],
+      "instrs": [
+        {
+          "dest": "two",
+          "op": "const",
+          "type": "int",
+          "value": 2
+        },
+        {
+          "args": [
+            "y",
+            "two"
+          ],
+          "dest": "res",
+          "op": "mul",
+          "type": "int"
+        },
+        {
+          "args": [
+            "res"
+          ],
+          "op": "ret"
+        }
+      ],
+      "name": "f",
+      "type": "int"
+    },
+    {
+      "args": [
+        {
+          "name": "y",
+          "type": "int"
+        }
+      ],
+      "instrs": [
+        {
+          "dest": "one",
+          "op": "const",
+          "type": "int",
+          "value": 1
+        },
+        {
+          "args": [
+            "y",
+            "one"
+          ],
+          "dest": "res",
+          "op": "add",
+          "type": "int"
+        },
+        {
+          "args": [
+            "res"
+          ],
+          "op": "ret"
+        }
+      ],
+      "name": "g",
+      "type": "int"
+    },
+    {
+      "instrs": [
+        {
+          "dest": "one",
+          "op": "const",
+          "type": "int",
+          "value": 1
+        },
+        {
+          "dest": "hundred",
+          "op": "const",
+          "type": "int",
+          "value": 100
+        },
+        {
+          "dest": "x",
+          "op": "const",
+          "type": "int",
+          "value": 2
+        },
+        {
+          "args": [
+            "x",
+            "one"
+          ],
+          "dest": "y",
+          "op": "add",
+          "type": "int"
+        },
+        {
+          "args": [
+            "x",
+            "hundred"
+          ],
+          "dest": "cond",
+          "op": "lt",
+          "type": "bool"
+        },
+        {
+          "args": [
+            "cond"
+          ],
+          "labels": [
+            "f_br",
+            "g_br"
+          ],
+          "op": "br"
+        },
+        {
+          "label": "f_br"
+        },
+        {
+          "args": [
+            "y"
+          ],
+          "dest": "z",
+          "funcs": [
+            "f"
+          ],
+          "op": "call",
+          "type": "int"
+        },
+        {
+          "labels": [
+            "main_ret"
+          ],
+          "op": "jmp"
+        },
+        {
+          "label": "g_br"
+        },
+        {
+          "args": [
+            "y"
+          ],
+          "dest": "z",
+          "funcs": [
+            "g"
+          ],
+          "op": "call",
+          "type": "int"
+        },
+        {
+          "labels": [
+            "main_ret"
+          ],
+          "op": "jmp"
+        },
+        {
+          "label": "main_ret"
+        },
+        {
+          "args": [
+            "z"
+          ],
+          "op": "print"
+        },
+        {
+          "args": [
+            "z"
+          ],
+          "op": "ret"
+        }
+      ],
+      "name": "main"
+    }
+  ]
+}
