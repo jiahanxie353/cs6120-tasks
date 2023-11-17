@@ -322,6 +322,9 @@ type State = {
 
   // For speculation: the state at the point where speculation began.
   specparent: State | null,
+
+  // For JIT tracing
+  tracing: boolean | null,
 }
 
 /**
@@ -366,9 +369,11 @@ function evalCall(instr: bril.Operation, state: State): Action {
     lastlabel: null,
     curlabel: null,
     specparent: null,  // Speculation not allowed.
+    tracing: state.tracing,
   }
   let retVal = evalFunc(func, newState);
   state.icount = newState.icount;
+  state.tracing = newState.tracing;
 
   // Dynamically check the function's return value and type.
   if (!('dest' in instr)) {  // `instr` is an `EffectOperation`.
@@ -411,6 +416,10 @@ function evalCall(instr: bril.Operation, state: State): Action {
  * instruction or "end" to terminate the function.
  */
 function evalInstr(instr: bril.Instruction, state: State): Action {
+  if (state.tracing && instr.op === "jmp" || instr.op === "br") {
+    console.log("I'm tracing op " + instr.op);
+  }
+
   state.icount += BigInt(1);
 
   // Check that we have the right number of arguments.
@@ -946,6 +955,7 @@ function evalProg(prog: bril.Program) {
     lastlabel: null,
     curlabel: null,
     specparent: null,
+    tracing: null,
   }
   evalFunc(main, state);
 
