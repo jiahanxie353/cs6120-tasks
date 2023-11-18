@@ -17,6 +17,7 @@ GRAMMAR = """
   | term "/"  item      -> div
   | term ">>" item      -> shr
   | term "<<" item      -> shl
+  | term ">"  item      -> gt
 
 ?item: NUMBER           -> num
   | "-" item            -> neg
@@ -38,7 +39,7 @@ def interp(tree, lookup):
     """
 
     op = tree.data
-    if op in ('add', 'sub', 'mul', 'div', 'shl', 'shr'):  # Binary operators.
+    if op in ('add', 'sub', 'mul', 'div', 'shl', 'shr', 'gt'):  # Binary operators.
         lhs = interp(tree.children[0], lookup)
         rhs = interp(tree.children[1], lookup)
         if op == 'add':
@@ -53,6 +54,8 @@ def interp(tree, lookup):
             return lhs << rhs
         elif op == 'shr':
             return lhs >> rhs
+        elif op == 'gt':
+            return lhs > rhs
     elif op == 'neg':  # Negation.
         sub = interp(tree.children[0], lookup)
         return -sub
@@ -83,7 +86,7 @@ def pretty(tree, subst={}, paren=False):
             return s
 
     op = tree.data
-    if op in ('add', 'sub', 'mul', 'div', 'shl', 'shr'):
+    if op in ('add', 'sub', 'mul', 'div', 'shl', 'shr', 'gt'):
         lhs = pretty(tree.children[0], subst, True)
         rhs = pretty(tree.children[1], subst, True)
         c = {
@@ -93,6 +96,7 @@ def pretty(tree, subst={}, paren=False):
             'div': '/',
             'shl': '<<',
             'shr': '>>',
+            'gt':  '>',
         }[op]
         return par('{} {} {}'.format(lhs, c, rhs))
     elif op == 'neg':
